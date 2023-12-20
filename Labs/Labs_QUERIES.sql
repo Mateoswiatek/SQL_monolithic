@@ -616,4 +616,123 @@ where koszt between 0.29 and 0.35)
 
 
 
+9.1
+
+CREATE SCHEMA kwiaciarnia;
+
+create table kwiaciarnia.klienci (
+    idklienta varchar(10) not null,
+    haslo   varchar(10) not null,
+    nazwa   varchar(40) not null,
+    miasto  varchar(40) not null,
+    kod     char(6)     not null,
+    adres   varchar(40) not null,
+    email   varchar(40) not null,
+    telefon varchar(16) not null,
+    fax     varchar(16),
+    nip     char(13),
+    region  char(9),
+    constraint haslo_min check (length((haslo)::text) > 4)
+);
+
+create table kwiaciarnia.zamowienia (
+    idzamowienia    int         not null,
+    idkleinta       varchar(10) not null,
+    idodbiorcy      int         not null,
+    idkompozycji    char(5)     not null,
+    termin          date        not null,
+    cena            numeric(7, 2) not null,
+    zaplacone       boolean,
+    uwagi           varchar(200)
+);
+
+create table kwiaciarnia.odbiorcy (
+    idodbiorcy  int         not null,
+    nazwa       varchar(40) not null,
+    miasto      varchar(40) not null,
+    kod         char(6)     not null,
+    adres       varchar(40) not null
+);
+
+
+create sequence odbiorcy_idodbiorcy_seq
+    start with 1
+    increment by 1
+    no minvalue
+    no maxvalue
+    cache 1;
+
+create table kwiaciarnia.kompozycje (
+    idkompozycji char(5) not null,
+    nazwa   varchar(40) not null,
+    opis    varchar(100),
+    cena    numeric(7, 2),
+    minimum int,
+    stan    int
+    constraint cena_min check (cena >= 40.00)
+);
+
+create table kwiaciarnia.zapotrzebowanie (
+    idkompozycji    char(5),
+    data            date
+);
+
+create table kwiaciarnia.historia (
+    idzamowienia    int , not null,
+    idklienta       char(10),
+    idkompozycji    char(5),
+    cena            numeric(10, 2),
+    termin          date
+);
+
+alter table only kwiaciarnia.odbiorcy alter column idodbiorcy set default
+nextval('kwiaciarnia.odbiorcy_idodbiorcy_seq'::regclass) -- ??? 
+
+
+alter table kwiaciarnia.klienci
+    add constraint klienci_pkey primary key (idklienta);
+
+alter table kwiaciarnia.zamowienia
+    add constraint zamowienia_pkey primary key (idzamowienia);
+
+
+alter table kwiaciarnia.historia
+    add constraint historia_pkey primary key (idzamowienia);
+
+alter table kwiaciarnia.kompozycje
+    add constraint kompozycje_pkey primary key (idkompozycji);
+
+alter table kwiaciarnia.odbiorcy
+    add constraint odbiorcy_pkey primary key (idodbiorcy);
+
+alter table kwiacairnia.zapotrzebowanie
+    add constraint zapotrzebowanie_pkey primary key (idkompozycji);
+
+
+alter table kwiaciarnia.zamowienia add constraint zamowienia_idklienta_fkey foreign key (idklienta)
+references klienci;
+alter table zamowienia add constraint zamowienia_idodbiorcy_fkey foreign key (idodbiorcy)
+references odbiorcy;
+alter table zamowienia add constraint zamowienia_idkompozycji_fkey foreign key (idkompozycji)
+references odbiorcy;
+
+alter table zapotrzebowanie add constraint zapotrzebowanie_idkompozycji_fkey foregin key (idkompozycji)
+references kompozycje;
+
+
+9.2
+copy kwiaciarnia.kleinci from stdin with (delimiter ';', null 'BRAK DANYCH');
+copy kwiaciarnia.kompozycje from stdin with (delimiter ';', null 'BRAK DANYCH');
+copy kwiaciarnia.odbiorcy from stdin with (delimiter ';', null 'BRAK DANYCH'); -- ?? tu coś z serialem trzeba dorobic
+copy kwiaciarnia.zamowienia from stdin with (delimiter ';', null 'BRAK DANYCH');
+copy kwiaciarnia.historia from stdin with (delimiter ';', null 'BRAK DANYCH');
+
+
+
+
+
+
+
+
+
 
