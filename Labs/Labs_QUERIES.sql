@@ -711,12 +711,12 @@ alter table kwiacairnia.zapotrzebowanie
 
 alter table kwiaciarnia.zamowienia add constraint zamowienia_idklienta_fkey foreign key (idklienta)
 references klienci;
-alter table zamowienia add constraint zamowienia_idodbiorcy_fkey foreign key (idodbiorcy)
+alter table kwiaciarnia.zamowienia add constraint zamowienia_idodbiorcy_fkey foreign key (idodbiorcy)
 references odbiorcy;
-alter table zamowienia add constraint zamowienia_idkompozycji_fkey foreign key (idkompozycji)
+alter table kwiaciarnia.zamowienia add constraint zamowienia_idkompozycji_fkey foreign key (idkompozycji)
 references odbiorcy;
 
-alter table zapotrzebowanie add constraint zapotrzebowanie_idkompozycji_fkey foregin key (idkompozycji)
+alter table kwiaciarnia.zapotrzebowanie add constraint zapotrzebowanie_idkompozycji_fkey foregin key (idkompozycji)
 references kompozycje;
 
 
