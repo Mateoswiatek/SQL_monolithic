@@ -733,6 +733,103 @@ copy kwiaciarnia.historia from stdin with (delimiter ';', null 'BRAK DANYCH');
 
 
 
+10.1
+-- bierzemy unikatowe nazwy pudełek, w których znajdują się czekoladki które są jedymi z trzech najdroższych.
+-- zwraca 3 rekordy, które są zamieniane na "listę"
+
+-- bierzemy nazwę czekoladki której koszt jest największy - nazwa najdroższej czekoladki.
+
+-- nazwę czekokladek oraz idppudełka w któym wstępuje dla trzech najdroższych czekoladek.
+
+-- nazwa oraz koszt dla wszystkich czekoladek, trzecia kolumna to maksymalna cena.
+
+
+-- natural joiny się gubiły, bo było więcej kolumn. 
+
+
+10.2
+select * from zamowienia join klienci using(idklienta);
+
+select dataRealizacji, idzamowienia
+from zamowienia
+join klienci using(idklienta)
+where nazwa ~~* '%antoni%';
+
+select * from zamowienia join klienci using(idklienta)
+where ulica ~~ '%/%';
+
+
+select dataRealizacji, idzamowienia from zamowienia join klienci using(idklienta)
+where miejscowosc = 'Kraków'
+and dataRealizacji::varchar ~~ '2013-11-__';
+
+10.3.1
+select * from zamowienia join klienci using(idklienta);
+select nazwa, ulica, miejscowosc, dataRealizacji from zamowienia 
+join klienci using(idklienta)
+where dataRealizacji = '2013-11-12';
+
+10.3.2
+select nazwa, ulica, miejscowosc, dataRealizacji from zamowienia 
+join klienci using(idklienta)
+where date_part('year', dataRealizacji) = 2013
+and date_part('month', dataRealizacji) = 11;
+
+10.3.3
+select * from zamowienia 
+join klienci using(idklienta)
+where idzamowienia in (
+select idzamowienia from artykuly
+join pudelka using(idpudelka) where nazwa in ('Kremowa fantazja', 'Kolekcja jesienna'));
+
+10.3.4
+-- nazwa, ulica, miejscowosc, dataRealizacji
+select * from zamowienia 
+join klienci using(idklienta)
+where idzamowienia in (
+    select idzamowienia from artykuly
+    where idpudelka in (select idpudelka from pudelka where nazwa in ('Kremowa fantazja', 'Kolekcja jesienna'))
+    and sztuk > 1);
+
+10.3.5
+select * from zamowienia join klienci using(idklienta) where idzamowienia in (
+    select idzamowienia from artykuly
+    join zawartosc using(idpudelka)
+    join czekoladki using(idczekoladki)
+    where orzechy = 'migdały');
+
+10.3.6
+select * from klienci where idklienta in (select idklienta from zamowienia);
+-- z exists
+SELECT k.* FROM klienci k WHERE EXISTS (SELECT z.* FROM zamowienia z WHERE z.idklienta = k.idklienta);
+
+10.3.7
+select * from klienci where idklienta not in (select idklienta from zamowienia);
+-- z exists
+SELECT k.* FROM klienci k WHERE NOT EXISTS (SELECT z.* FROM zamowienia z WHERE z.idklienta = k.idklienta)
+
+
+10.4
+10.4.1
+select p.nazwa, p.opis, p.cena from pudelka p
+join zawartosc using(idpudelka)
+join czekoladki using(idczekoladki)
+where idczekoladki = 'd09';
+
+10.4.2
+select p.nazwa, p.opis, p.cena from pudelka p
+join zawartosc using(idpudelka)
+join czekoladki c using(idczekoladki)
+where c.nazwa = 'Gorzka truskawkowa';
+
+10.4.3
+select p.nazwa, p.opis, p.cena from pudelka p
+join zawartosc using(idpudelka)
+join czekoladki c using(idczekoladki)
+where c.nazwa in (select nazwa from czekoladki where nazwa ~~ 'S%');
+
+
+
 
 
 
