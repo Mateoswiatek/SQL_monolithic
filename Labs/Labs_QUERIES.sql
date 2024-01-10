@@ -830,6 +830,140 @@ where c.nazwa in (select nazwa from czekoladki where nazwa ~~ 'S%');
 
 
 
+11.1
+/*
+create function masaPudelka(idpudelka char(4)) returns numeric(7,2) as 
+$$
+declare
+    summasa numeric(7,2) := 0;
+    w record;
+begin
+    for w in select idczekoladki, sztuk from zawartosc z where z.idpudelka = idpudelka
+    loop
+        summasa := summasa + w.sztuk * (select masa from czekoladki c where c.idczekoladki = w.idczekoladki);
+    end loop;
+    return summasa;
+end;
+$$
+language plpgsql
+*/
+
+CREATE OR REPLACE FUNCTION masaPudelka2(in arg1 CHARACTER(4))
+RETURNS INTEGER AS
+$$
+DECLARE 
+    wynik INTEGER;
+BEGIN
+    SELECT SUM(c.masa*z.sztuk) INTO wynik
+    FROM
+        pudelka p
+        JOIN zawartosc z USING (idpudelka)
+        JOIN czekoladki c USING (idczekoladki)
+    WHERE p.idpudelka = arg1;
+
+    RETURN wynik;
+END;
+$$ LANGUAGE PLpgSQL;
+
+SELECT masaPudelka2('alls');
 
 
+11.2
+create or replace function zysk(in _idpudelka char(4))
+returns numeric(7, 2) as
+$$
+declare 
+    naszKoszt numeric(7,2);
+begin
+    select sum(c.koszt * z.sztuk) into naszKoszt
+    from zawartosc z join czekoladki c using(idczekoladki)
+    where z.idpudelka = _idpudelka;
 
+    return (select  cena from pudelka where idpudelka = _idpudelka) - naszKoszt - 0.90;
+    
+end;
+$$ language PLpgSQL;
+
+select zysk('alls');
+
+select SUM(zysk(idpudelka)*sztuk) from zamowienia join artykuly using(idzamowienia)
+where datarealizacji = '2013-10-30';
+
+/* 
+select *
+    from zawartosc z join czekoladki c using(idczekoladki)
+    where z.idpudelka = 'alls';
+
+(select  cena from pudelka where idpudelka = 'alls'); 
+*/
+
+11.3.1
+
+create or replace function sumaZamowien(in _idklienta integer)
+returns numeric(7,2) as
+$$
+declare
+    sumaZamowien_ numeric(7,2);
+begin
+    select SUM(sztuk * cena) into sumaZamowien_
+        from zamowienia
+        join artykuly using(idzamowienia)
+        join pudelka using(idpudelka)
+        where idklienta = _idklienta;
+
+    return sumaZamowien_;
+end;
+$$ language plpgsql;
+
+select sumaZamowien(7);
+
+-- select sztuk, cena from zamowienia join artykuly using(idzamowienia) join pudelka using(idpudelka) where idklienta = 7;
+
+/*
+-- klient co ma najwiecej zamowien,
+-- id4 => 6
+-- id2 => 4 
+-- id3 => 3
+-- id7 => 2
+-- id8 => 1
+select idklienta, count(*) from zamowienia group by idklienta
+order by count(*) desc; 
+*/
+
+11.3.2
+
+create or replace function rabat(in _idklienta integer)
+returns numeric(7,2) as
+$$
+declare
+    _wartosc numeric(7,2);
+    -- rabat_pr numeric(7,2);
+begin
+    select sumaZamowien(_idklienta) into _wartosc;
+    -- return _wartosc * rabat_pr; - rabat to bylo to case.
+    return _wartosc * case -- obliczanie rabatu w procentach
+            when _wartosc between 101 and 200 then 0.04
+            when _wartosc between 201 and 400 then 0.07
+            else 0.08
+        end case;
+end;
+$$ language PLpgSQL;
+
+select sumaZamowien(7);
+select rabat(7);
+
+11.4.1
+create or replace function podwyzka() returns integer as
+$$
+declare
+    w record;
+    _podwyzka numeric(7,2)
+begin
+    for w in select * from czekoladki
+    loop
+        case
+            when w.koszt < 20 then w.koszt := w.koszt +
+    end loop;
+    
+end;
+$$ language plpgsql;
