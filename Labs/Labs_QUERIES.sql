@@ -716,7 +716,7 @@ references odbiorcy;
 alter table kwiaciarnia.zamowienia add constraint zamowienia_idkompozycji_fkey foreign key (idkompozycji)
 references odbiorcy;
 
-alter table kwiaciarnia.zapotrzebowanie add constraint zapotrzebowanie_idkompozycji_fkey foregin key (idkompozycji)
+alter table kwiaciarnia.zapotrzebowanie add constraint zapotrzebowanie_idkompozycji_fkey foreign key (idkompozycji)
 references kompozycje;
 
 
@@ -967,3 +967,259 @@ begin
     
 end;
 $$ language plpgsql;
+
+
+
+
+-- OSTATNIE LABY
+-- nie będzie triggerow, 
+-- nie bedzie sprowadzania do postaci normalnej.
+
+-- z algebry zależności będzie
+
+
+-- http://20.123.196.72:9001/p/AGH-MP-LAB12-a
+-- LAB12 a
+
+F. zwracac musi abstrakcyjny typ trigger
+
+Trigger moze sie odpalić przed lub po akcji
+
+Zwracane typy : NEW, OLD
+
+
+CREATE TABLE wazne (
+    id SERIAL PRIMARY KEY,
+    dane TEXT
+);
+
+INSERT INTO wazne ( dane) 
+VALUES 
+    ('Dane 1'), 
+    ( 'Dane 2'), 
+    ( 'Dane 3');
+
+
+CREATE TABLE zapas (
+    id SERIAL PRIMARY KEY,
+    stary_id int,
+    dane TEXT,
+    czas TIMESTAMP
+);
+
+
+Cel: trigger, który przy update tabeli WAZNE przepisze dane do tabeli ZAPAS i doda znacznik czasowy.
+
+
+
+CREATE OR REPLACE FUNCTION on_update_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP);
+    RETURN OLD; 
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE TRIGGER wazneAfterUpdate
+AFTER UPDATE  ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_update_wazne();
+
+
+CREATE OR REPLACE FUNCTION on_delete_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas_)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER wazneAfterDelete
+AFTER DELETE ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_delete_wazne();
+
+select * from wazne;
+update wazne set dane='poprawione' where id<3;
+
+drop trigger wazneAfterUpdate on wazne;
+drop function on_update_wazne;
+drop function on_delete_wazne;Welcome to Etherpad!
+
+CREATE OR REPLACE FUNCTION on_update_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP);
+    RETURN OLD; 
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE TRIGGER wazneAfterUpdate
+AFTER UPDATE  ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_update_wazne();
+
+
+CREATE OR REPLACE FUNCTION on_delete_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas_)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER wazneAfterDelete
+AFTER DELETE ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_delete_wazne();
+
+select * from wazne;
+update wazne set dane='poprawione' where id<3;
+
+drop trigger wazneAfterUpdate on wazne;
+drop function on_update_wazne;
+drop function on_delete_wazne;Welcome to Etherpad!
+
+
+-- http://20.123.196.72:9001/p/AGH-MP-LAB12-b
+-- LAB12 b
+
+
+CREATE TABLE wazne (
+    id SERIAL PRIMARY KEY,
+    dane TEXT
+);
+
+INSERT INTO wazne ( dane) 
+VALUES 
+    ('Dane 1'), 
+    ( 'Dane 2'), 
+    ( 'Dane 3');
+
+
+CREATE TABLE zapas (
+    id SERIAL PRIMARY KEY,
+    stary_id int,
+    dane TEXT,
+    czas TIMESTAMP,
+    akcja varchar(20)
+);
+
+Cel: Trigger ma przepisywać do 'zapas' dane z 'wazne' oraz  komentarz co się działo  ('zmieniony', 'skasowany')
+Cel: Można następnie stworzyc jeden trigger implementujący obywdie wersje w jednym bloku kodu.
+
+
+
+
+CREATE OR REPLACE FUNCTION on_update_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas,akcja)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP,'wstawiony');
+    RETURN OLD; 
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER wazneAfterUpdate
+AFTER UPDATE OR DELETE ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_update_wazne();
+
+
+CREATE OR REPLACE FUNCTION on_delete_wazne()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO zapas(stary_id,dane,  czas,akcja)
+    VALUES (OLD.id, OLD.dane, CURRENT_TIMESTAMP,'usuniety');
+    RETURN OLD; 
+END;
+$$ LANGUAGE plpgsql;
+
+drop trigger wazneAfterDelete on wazne
+
+CREATE TRIGGER wazneAfterDelete
+BEFORE  DELETE ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_delete_wazne();
+
+CREATE TRIGGER wazneAfterInsert
+AFTER  DELETE ON wazne
+FOR EACH ROW
+EXECUTE FUNCTION on_udate_wazne();
+
+
+
+
+
+
+
+CREATE TABLE nowa_tabela (
+    nazwa VARCHAR(20),
+    numer SERIAL PRIMARY KEY
+);
+
+INSERT INTO nowa_tabela VALUES ('ala');
+
+alter table nowa_tabela add column 
+liczba integer;
+alter table nowa_tabela add column 
+liczba2 integer default 2;
+
+alter table nowa_tabela alter column liczba2 add check(liczba < 18);
+alter table nowa_tabela alter column liczba2 set not null;
+insert into nowa_tabela values('ola', default, null, null);
+alter table nowa_tabela alter column liczba2 drop not null;
+insert into nowa_tabela values('ola', default, null, null);
+
+delete from nowa_tabela where liczba2 is null;
+
+insert into nowa_tabela values('ola', default, 20, null);
+
+
+
+insert into nowa_tabela values('ola', default, 20, null);
+
+select * from nowa_tabela;
+update nowa_tabela set liczba = 20;
+-- Sprawdź nazwę ograniczenia CHECK
+select constraint_name from information_schema.check_constraints
+where constraint_name ~ 'pelnoletni';
+
+alter table nowa_tabela add constraint pelnoletni check(liczba > 18);
+alter table nowa_tabela drop constraint pelnoletni;
+alter table nowa_tabela alter column liczba set not null;
+
+
+create table maz(
+    id integer primary key,
+    idzony integer
+);
+create table zona(
+    id integer primary key,
+    idmeza integer
+);
+alter table maz 
+    add foreign key(idzony) references zona;
+
+alter table zona add constraint zona_idmeza_fkey
+    foreign key(idmeza) references maz;
+
+alter table zona drop constraint foreign key(idmeza);
+
+drop table maz ;
+
+SELECT constraint_name
+FROM information_schema.table_constraints
+WHERE table_name = 'zona' AND constraint_type = 'FOREIGN KEY';
+
+alter table zona drop constraint zona_idmeza_fkey1;
