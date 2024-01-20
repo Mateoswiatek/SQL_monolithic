@@ -1223,3 +1223,379 @@ FROM information_schema.table_constraints
 WHERE table_name = 'zona' AND constraint_type = 'FOREIGN KEY';
 
 alter table zona drop constraint zona_idmeza_fkey1;
+
+
+create table dzialy(
+    iddzialu    char(5)     primary key,
+    nazwa       varchar(32) not null,
+    lokalizacja varchar(23) not null,
+    kierownik   integer     not null
+);
+
+create table pracownicy(
+    idpracownika    integer     primary key,
+    nazwisko        varchar(32) not null,
+    imie            varchar(16) not null,
+    dataUrodzenia   date        not null,
+    dzial           char(5)     not null,
+    stanowisko      varchar(24),
+    pobory          numeric(7,2)
+);
+
+alter table dzialy add constraint dzial_fk
+    foreign key(kierownik) references pracownicy(idpracownika) on update cascade deferrable;
+alter table pracownicy add constraint pracownicy_fk
+    foreign key(dzial) references dzialy(iddzialu) on update cascade deferrable;
+
+
+select * from dzialy;
+select * from pracownicy;
+
+create schema testowe;
+ALTER ROLE matrxteo SET search_path TO testowe; 
+create table test(
+    index serial primary key
+);
+-- Sprawdź, czy tabela istnieje w danym schemacie
+SELECT table_name, table_schema
+FROM information_schema.tables where table_name = 'test';
+
+select * from test;
+drop table test;
+SELECT table_name, table_schema
+FROM information_schema.tables where table_name = 'test';
+
+
+create table klienci(
+    idklienta varchar(10) primary key,
+    haslo varchar(10) not null,
+    nazwa varchar(40) not null,
+    miasto varchar(40) not null,
+    kod char(6) not null,
+    adres varchar(40) not null,
+    email varchar(40),
+    telefon varchar(16) not null,
+    fax varchar(16),
+    nip char(13),
+    regon char(9)
+);
+
+create table kompozycje(
+    idkompozycji char(5) primary key,
+    nazwa varchar(40) not null,
+    opic varchar(100),
+    cena numeric(7,2),
+    minimm integer,
+    stan integer
+);
+
+create table odbiorcy(
+    idodbiorcy serial primary key,
+    nazwa varchar(40) not null,
+    miasto varchar(40) not null,
+    kod char(6) not null,
+    adres varchar(40) not null
+);
+
+create table zapotrzebowanie(
+    idkompozycji char(5) primary key,
+    data date
+);
+
+create table historia(
+    idzamowienia integer primary key,
+    idklienta varchar(10),
+    idkompozycji char(5),
+    cena numeric(7,2),
+    termin date
+);
+
+create table zamowienia(
+    idzamowienia integer primary key,
+    idklienta varchar(10) not null,
+    idodbiorcy integer not null,
+    idkompozycji char(5) not null,
+    termin date not null,
+    cen numeric(7,2),
+    zaplacone boolean default false,
+    uwagi varchar(200)
+);
+
+alter table historia add constraint historia_fk foreign key(idzamowienia) references zamowienia(idzamowienia);
+alter table zapotrzebowanie add constraint zapotrzebowanie_fk foreign key(idkompozycji) references kompozycje(idkompozycji);
+
+
+alter table klienci add constraint min_dl_hasla check(length(haslo) >= 4);
+alter table kompozycje add constraint min_cena check(cena >= 40.00);
+
+alter table zamowienia
+    add constraint zamowienia_klient_fk     foreign key(idklienta)    references klienci(idklienta),
+    add constraint zamowienia_odbiorca_fk   foreign key(idodbiorcy)   references odbiorcy(idodbiorcy),
+    add constraint zamowienia_kompozycja_fk foreign key(idkompozycji) references kompozycje(idkompozycji);
+
+
+SELECT constraint_name, constraint_type, table_name
+FROM information_schema.table_constraints
+WHERE table_name = 'zamowienia';
+
+--gdy dodawany jest zamowienie, sprawdzamy czy mamy tyle na stanie,
+--jesli tak to apceptuejmy, odejmujemy od stanu tyle ile zeszlo, jesli
+--spadnie ponizej normy minimum to dajemy do zapotrzebowania 2*minium? i tyle
+
+-- dorobic
+
+create table diety(
+    id_diety serial primary key,
+    nazwa varchar(150) not null,
+    gluten boolean not null,
+    laktoza boolean not null,
+    wege boolean not null,
+    keto boolean not null,
+    opakowania_eko boolean not null,
+    cena_dzien numeric(5,2) not null
+);
+
+create table dania (
+    id_dania serial primary key,
+    nazwa varchar(255) not null,
+    gramatura integer not null,
+    kalorycznosc integer not null,
+    kuchnia varchar(100),
+    wymaga_podgrzania boolean not null,
+    koszt_produkcji numeric(5,2)
+);
+
+create table dostepnosc(
+    id_diety integer not null,
+    id_dania integer not null,
+    data_dostawy date not null,
+    pora_dnia varchar(100) not null
+);
+
+create table wybory(
+    id_zamowienia integer not null, -- aby potem zamienic constraint na alter table
+    id_dania integer not null,
+    data_dostawy date not null,
+    constraint wybory_pk primary key(id_zamowienia, id_dania, data_dostawy)
+);
+
+
+alter table dostepnosc
+	add constraint dostepnosc_pk primary key(id_diety, id_dania, data_dostawy),
+	add constraint dostepnosc_iddiety_fk foreign key(id_diety) references diety(id_diety),
+	add constraint dostepnosc_iddania_fk foreign key(id_dania) references dania(id_dania),
+    add constraint pora_dnia_c check(pora_dnia in ('śniadanie', 'drugie śniadanie', 'obiad', 'podwieczorek', 'kolacja')); -- ewentualnie enum, lepiej tabele słownikowe
+
+alter table dania
+	add constraint dlugsoc_nazwy_dania_c check(length(nazwa) >= 5);
+
+-- alter table dania drop constraint pora_dnia_c;
+insert into dania values(1, 'danie1', 20, 300, 'Polska', false, 20.5);
+select * from dania;
+
+alter table diety add column nazwa varchar(100);
+insert into diety values(1, 'nazwa');
+-- delete from diety where id_diety = 1;
+
+insert into dostepnosc values(1, 1, '2024-01-20', 'śniadanie');
+
+select * from diety;
+select * from dania;
+select * from dostepnosc;
+
+insert into dostepnosc values(1, 1, '2024-01-20', 'śniadaniee'); -- git dziala ograniczenie
+
+-- ===========================================================
+-- TEST zad 4b
+-- Korzystając z operatorów any oraz all (obu) napisz zapytanie SQL pobierające z bazy ID wszystkich
+-- dań, które co najmniej raz były dostępne na kolację, a które jednocześnie ani razu nie zostały wybrane w
+-- roku 2023. Nie używaj złączeń JOIN.
+-- ===========================================================
+
+select * from dostepnosc;
+delete from dostepnosc;
+
+insert into dania values
+    (1, 'danie1', 1, 100, 'Francja', false, 1.0)
+    (2, 'danie2', 2, 200, null,      false, 2.0);
+    (3, 'danie3', 3, 300, 'Polska',  false, 3.0),
+    (4, 'danie4', 4, 400, 'Polska',  false, 4.0);
+
+select * from dania;
+
+insert into wybory values
+    (1, 1, '2023-07-19'),
+    (1, 1, '2023-07-20'),
+    (2, 2, '2024-03-20'),
+    (2, 2, '2024-03-21'),
+    (3, 3, '2019-02-20'),
+    (3, 3, '2019-02-22'),
+    (4, 4, '2023-02-20'),
+    (4, 4, '2023-02-27');
+
+select * from wybory;
+
+insert into diety values
+    (1, 'nazwa1'),
+    (2, 'nazwa2'),
+    (3, 'nazwa3');
+
+
+select * from dostepnosc;
+
+-- TF
+insert into dostepnosc values(1, 1, '2023-07-19', 'śniadanie');
+insert into dostepnosc values(1, 1, '2023-07-20', 'kolacja');
+-- TT
+insert into dostepnosc values(2, 2, '2024-03-20', 'kolacja');
+insert into dostepnosc values(2, 2, '2024-03-21', 'śniadanie');
+-- FT
+insert into dostepnosc values(3, 3, '2019-02-20', 'obiad');
+insert into dostepnosc values(3, 3, '2019-02-22', 'śniadanie');
+-- FF
+insert into dostepnosc values(3, 4, '2023-02-20', 'obiad');
+insert into dostepnosc values(3, 4, '2023-02-27', 'śniadanie');
+
+-- Pierwszy warunek
+select id_dania from dostepnosc
+where
+pora_dnia = 'kolacja';
+
+-- X F: -> te ktore niespelniaja drugiego warunku:
+select id_dania from wybory where date_part('year', data_dostawy) = 2023;
+
+-- Razem -> tylkok index 2 powinien byc poprawny.
+
+-- ZAD4
+
+select id_dania from dostepnosc
+where
+pora_dnia = 'kolacja'
+and id_dania  != all (select id_dania from wybory where date_part('year', data_dostawy) = 2023);
+
+create temporary table test(
+    id serial
+);
+insert into test values
+    (default),
+    (default),
+    (default),
+    (default);
+select * from test;
+
+insert into test values(7);
+select * from test;
+
+
+-- Napisz zapytanie które wstawi klienta o loginie poprzedniego klienta
+-- o najwyższym id z dopiskiem "ALT", ma mieć id większe o 1, tą samą datę
+-- urodzenia i dzisiejszą date rejestracji.
+
+create temporary table klienci_t(
+    nazwa varchar(50),
+    id_klienta serial,
+    data_urodzenia date,
+    data_rejstracji date
+);
+insert into klienci_t values
+    ('Login', 1, '2002-01-07', '2023-01-20'),
+    ('Login2', 2, '2002-12-28', '2023-01-21');
+
+select * from klienci_t;
+
+insert into klienci_t
+select (nazwa || 'ALT'), (id_klienta+1), data_urodzenia, current_date from klienci_t 
+where id_klienta = (select max(id_klienta) from klienci_t);
+
+select * from klienci_t;
+
+
+
+create temporary sequence seq1;
+
+create temporary table nazwa_tabeli(
+    nazwa integer primary key default nextval('seq1'),
+    znak char
+);
+
+insert into nazwa_tabeli values
+(default, 'a'),
+(default, 'b'),
+(default, 'c'); 
+
+select * from nazwa_tabeli;
+
+
+create temporary table nazwa_tabeli(
+    nazwa serial primary key,
+    znak char
+);
+
+insert into nazwa_tabeli values
+(default, 'a'),
+(default, 'b'),
+(default, 'c');
+
+select * from nazwa_tabeli;
+
+1.
+select nazwisko, wiek, pobory*12 as roczne_pobory from pracownicy
+order by roczne_pobory desc, nazwisko;
+
+2.
+select nazwisko, imie, dataUrodzenia, coalesce(stanowisko, 'nie ma'), dzial, pobory
+where stanowisko in ('robotnik', 'analityk')
+and pobory > 2000;
+
+3.
+select nazwisko, imie from pracownicy 
+where
+pobory > (select pobory form pracownicy where imie = 'Adam' and nazwisko = 'Kowalik');
+
+4.
+update pracownicy set pobory = pobory*1.1 where stanowisko = 'robotnik';
+
+5.
+select stanowisko, avg(pobory), count(idpracownika) from pracownicy
+where stanowisko <> 'kierownik';
+group by stanowisko;
+
+
+
+create temporary table dzialy(
+    iddzialu char(5) primary key,
+    nazwa varchar(32) not null,
+    likalizacja varchar(24) not null,
+    kierownik integer not null
+);
+
+
+
+create temporary table pracownicy(
+    idpracownika serial primary key,
+    nazwisko varchar(32) not null,
+    imie varchar(16) not null,
+    dataUrodzenia date not null,
+    dzial char(5) not null,
+    stanowisko varchar(24),
+    pobory numeric(10,2)
+);
+
+alter table pracownicy add constraint pracownicy_dzial_fk foreign key(dzial) references dzialy(iddzialu);
+alter table dzialy add constraint dzialy_kierownik_fk foreign key(kierownik) references pracownicy(idpracownika);
+
+select * from pracownicy;
+select * from dzialy;
+
+
+-- sprawdzenie rekurencjynych
+create temporary table pracownicy(
+    id_pracownika serial primary key,
+    id_szefa integer,
+    imie varchar(20)
+);
+
+alter table pracownicy add constraint pracownicy_id_szefa_fk
+	foreign key(id_szefa) references pracownicy(id_pracownika);
+
+
