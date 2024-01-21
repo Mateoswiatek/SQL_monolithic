@@ -879,7 +879,7 @@ begin
     from zawartosc z join czekoladki c using(idczekoladki)
     where z.idpudelka = _idpudelka;
 
-    return (select  cena from pudelka where idpudelka = _idpudelka) - naszKoszt - 0.90;
+    return (select cena from pudelka where idpudelka = _idpudelka) - naszKoszt - 0.90;
     
 end;
 $$ language PLpgSQL;
@@ -899,7 +899,7 @@ select *
 
 11.3.1
 
-create or replace function sumaZamowien(in _idklienta integer)
+create or replace function sumaZamowien(in idklienta_ integer)
 returns numeric(7,2) as
 $$
 declare
@@ -909,7 +909,7 @@ begin
         from zamowienia
         join artykuly using(idzamowienia)
         join pudelka using(idpudelka)
-        where idklienta = _idklienta;
+        where idklienta = idklienta_;
 
     return sumaZamowien_;
 end;
@@ -932,14 +932,14 @@ order by count(*) desc;
 
 11.3.2
 
-create or replace function rabat(in _idklienta integer)
+create or replace function rabat(in idklienta_ integer)
 returns numeric(7,2) as
 $$
 declare
     _wartosc numeric(7,2);
     -- rabat_pr numeric(7,2);
 begin
-    select sumaZamowien(_idklienta) into _wartosc;
+    select sumaZamowien(idklienta_) into _wartosc;
     -- return _wartosc * rabat_pr; - rabat to bylo to case.
     return _wartosc * case -- obliczanie rabatu w procentach
             when _wartosc between 101 and 200 then 0.04
@@ -951,14 +951,14 @@ $$ language PLpgSQL;
 
 
 -- niby powinno dzialc ale chyba jednak nie
-create or replace function rabat(in _idklienta integer)
+create or replace function rabat(in idklienta_ integer)
 returns numeric(7,2) as
 $$
 declare
     _wartosc numeric(7,2);
     -- rabat_pr numeric(7,2);
 begin
-    select sumaZamowien(_idklienta) into _wartosc;
+    select sumaZamowien(idklienta_) into _wartosc;
     -- return _wartosc * rabat_pr; - rabat to bylo to case.
     return _wartosc * case _wartosc -- obliczanie rabatu w procentach
             when between 101 and 200 then 0.04
@@ -1694,6 +1694,7 @@ insert into zamowienia from x;
 select * from kompozycje;
 insert into kompozycje values('j02', 'nazwa', 'opis', 40.5, 2, 5);
 
+
 with p as (update kompozycje set cena = cena * 1.1 returning *)
 select idkompozycji, nazwa, cena from p;
 
@@ -1729,3 +1730,807 @@ alter table klienci_tmp alter column nazwa
 type integer using(length(nazwa));
 
 select * from klienci_tmp;
+
+-- ================================================================
+--                  FUNKCJE RÓŻNE
+-- ================================================================
+
+create or replace function suma_zamowien(id_klienta_v integer)
+returns numeric(7,2) as
+$$
+declare
+    suma numeric(7,2);
+begin
+	select sum(sztuk*cena) into suma
+    from zamowienia natural join artykuly natural join pudelka
+	where idklienta = id_klienta_v;
+    return suma;
+end;
+$$ language plpgsql;
+
+select suma_zamowien(7);
+
+create or replace function rabat2(id_klienta_v integer)
+returns numeric(7,2) as
+$$
+declare
+	suma numeric(7,2);
+	wartosc_rabatu numeric(7,2);
+begin
+	select suma_zamowien(id_klienta_v) into suma;
+	wartosc_rabatu = suma * case
+        when suma < 75 then 0.05
+	    when suma between 75 and 110 then 0.07
+	    else 0.08
+    end case;
+	return wartosc_rabatu;
+end;
+$$ language plpgsql;
+select rabat2(7);
+
+create or replace function rabat2(id_klienta_v integer)
+returns numeric(7,2) as
+$$
+declare
+	suma numeric(7,2);
+begin
+	select suma_zamowien(id_klienta_v) into suma;
+	return suma * case
+        when suma < 75 then 0.05
+	    when suma between 75 and 110 then 0.07
+	    else 0.08
+    end case;
+end;
+$$ language plpgsql;
+
+
+select rabat2(7);
+
+create or replace function sumaZamowien(_idklienta integer) returns numeric(7,2) as
+$$
+declare
+	suma numeric(7,2);
+begin
+	select sum(cena*sztuk) into suma
+        from zamowienia
+        natural join artykuly
+        natural join pudelka
+        where idklienta = _idklienta;
+	return suma;
+end;
+$$ language plpgsql;
+
+select sumaZamowien(7);
+
+
+create or replace function testowa(cena numeric(7,2)) returns numeric(7,2) as
+$$
+begin
+	if cena < 0.0 then
+        raise exception 'nieprawidlowa cena %, %', cena, $1; -- ablo $1 - odwołanie do atrybutow
+    else raise notice 'licze dla %', cena;
+    end if;
+	return cena;
+end;
+$$ language plpgsql;
+
+select testowa(4.4);
+select testowa(-4.4);
+
+
+
+create or replace function nazwa_funkcji(idklienta_ integer) returns numeric(7,2) as
+$$
+declare
+	suma numeric(7,2);
+begin
+	if (idklienta_ not in (select idklienta from klienci)) then
+        raise exception 'Nie ma takiego kllienta o id= %', idklienta_;
+	end if;
+	
+    select sum(sztuk*cena) into suma
+    from zamowienia
+    natural join artykuly
+    natural join pudelka
+    where idklienta = idklienta_;
+
+	return suma;
+end;
+$$ language plpgsql;
+
+-- select nazwa_funkcji(-1);
+select nazwa_funkcji(7);
+
+drop function nazwa_funkcji(integer);
+
+/*
+DO $$ 
+DECLARE 
+    func_name TEXT;
+BEGIN 
+    FOR func_name IN (SELECT proname FROM pg_proc
+    WHERE proowner = (SELECT usesysid FROM pg_user WHERE usename = 'nazwa_uzytkownika')) 
+    LOOP 
+        EXECUTE 'DROP FUNCTION IF EXISTS ' || func_name || ' CASCADE'; 
+    END LOOP;  
+END $$;
+*/
+
+-- between jest domknięty po obu stronach, w tedy decyduje koleność w case. 
+-- przy dokładniejszych lepiej normalne < i <=
+create or replace function nazwa_funkcji(wartosc integer)
+returns numeric(7,2) as
+$$
+declare
+    wynik numeric(7,2) = 5;
+begin
+	 wynik = case
+        when wartosc < 75 then 1
+        when wartosc >= 75 and wartosc < 110 then 2
+        when wartosc >= 110 and wartosc < 150 then 3
+	    else 4
+    end case;
+    return wynik;
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji(74); -- 1
+select nazwa_funkcji(75); -- 2 
+select nazwa_funkcji(76); -- 2 
+select nazwa_funkcji(109); -- 2 
+select nazwa_funkcji(110); -- 3 
+select nazwa_funkcji(111); -- 3
+select nazwa_funkcji(149); -- 3
+select nazwa_funkcji(150); -- 4 
+select nazwa_funkcji(151); -- 4
+
+drop function nazwa_funkcji(integer);
+
+
+-- testowanie typu record, czy git działa odwołanie jak do tabeli 
+-- ogolnie też z with x as () jest problem, bo nie pamieta po kolejnych zapytaniach 
+-- chyba.
+
+select *
+        from zamowienia
+        natural join artykuly
+        natural join pudelka
+        where idklienta = 7 limit 1;
+
+create or replace function nazwa_funkcji(idklienta_ integer)
+returns numeric(7,2) as
+$$
+declare
+	r record;
+begin
+	select * into r
+        from zamowienia
+        natural join artykuly
+        natural join pudelka
+        where idklienta = idklienta_ limit 1;
+	return r.cena;
+end;
+$$ language plpgsql;
+select nazwa_funkcji(7);
+
+drop function nazwa_funkcji(integer);
+
+
+-- ======================================================
+--                  PETLE
+-- ======================================================
+
+--=========================================
+create or replace function nazwa_funkcji(licznik integer)
+returns integer as
+$$
+declare
+	n integer;
+begin
+    n = 0;
+    <<infinite>>
+    loop
+        n = n+1;
+        exit infinite when n>=licznik;
+    end loop;
+    return n;
+end;
+$$ language plpgsql;
+select nazwa_funkcji(8);
+select nazwa_funkcji(15);
+
+drop function nazwa_funkcji(integer);
+
+
+
+--=========================================
+create temporary table test(
+    id integer
+);
+
+create or replace function nazwa_funkcji() returns void as
+$$
+begin
+    for i in 0 .. 10 by 2 
+    loop
+        insert into test values(i);
+    end loop;
+
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji();
+
+select * from test;
+
+drop function nazwa_funkcji();
+
+
+--=========================================
+create temporary table test(
+    id numeric(7,2)
+);
+
+create function nazwa_funkcji() returns void as 
+$$
+declare
+    w record;
+begin 
+	for w in update kompozycje set cena = cena * 1.1 returning *
+	loop
+		insert into test values(w.cena);
+	end loop;
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji();
+select * from test;
+drop function nazwa_funkcji();
+
+
+--=========================================
+create or replace function nazwa_funckji(idklienta_ integer, out suma numeric) as
+$$
+begin
+	select sum(sztuk*cena) into suma
+        from zamowienia
+        natural join artykuly
+        natural join pudelka
+        where idklienta = idklienta_;
+end;
+$$ language plpgsql;
+
+select nazwa_funckji(7);
+
+drop function nazwa_funckji(integer);
+
+
+--=========================================
+create temporary table test(
+    id integer
+);
+
+create function nazwa_funkcji() returns void as 
+$$
+declare 
+    x integer = 0;
+begin 
+    while x < 10
+    loop
+        insert into test values(x);
+        x = x + 1;
+    end loop;
+
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji();
+select * from test;
+drop function nazwa_funkcji();
+
+--=========================================
+create temporary table test(
+    id integer
+);
+
+create function nazwa_funkcji() returns void as
+$$
+declare 
+    w record;
+begin
+	for w in select * from klienci
+	loop
+		insert into test values(w.idklienta);
+	end loop;
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji();
+select * from test;
+drop function nazwa_funkcji();
+
+--=========================================
+create temporary table test(
+    id integer
+);
+
+CREATE TEMPORARY TABLE klienci_tmp AS
+SELECT * FROM klienci;
+
+create function nazwa_funkcji() returns void as
+$$
+declare 
+    w record;
+begin
+	for w in update klienci_tmp set idklienta = idklienta + 100 where idklienta < 40 returning *
+	loop
+		insert into test values(w.idklienta);
+	end loop;
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji();
+select * from test;
+drop function nazwa_funkcji();
+
+--=========================================
+-- z if trzeba uwazac i zawsze dawać w when cala logike.
+create or replace function nazwa_funkcji(x integer, out y integer) as
+$$
+begin 
+    if x<10 then y = 10;
+    elseif x<20 then y = 20;
+    else y = 30;
+    end if;
+
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji(14);
+
+drop function nazwa_funkcji();
+
+--=========================================
+create or replace function nazwa_funkcji(cena numeric, out znizka numeric) as
+$$
+begin
+	znizka = case 
+	when cena < 20.0 then 0.05
+	when cena >= 20.0 and cena < 40.0 then 0.10
+	else 2.0
+	end case; 
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji(25.0);
+
+drop function nazwa_funkcji(numeric);
+
+
+--=========================================
+-- polimorficzne
+create or replace function nazwa_funkcji(v1 anyelement,
+    v2 anyelement, v3 anyelement, out wyjscie anyelement) as
+$$
+begin
+    wyjscie = v1 + v2 + v3;
+end;
+$$ language plpgsql;
+select nazwa_funkcji(1, 2, 3);
+select nazwa_funkcji(1.0, 2.0, 3.0);
+drop function nazwa_funkcji(anyelement, anyelement, anyelement);
+
+--=========================================
+create temporary table wyniki(cos integer, cos2 varchar);
+
+create function nazwa_funkcji(x integer, y varchar) returns setof wyniki as
+$$
+begin
+	return next (x, y);
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji(1, 'aaa');
+
+drop function nazwa_funkcji(integer, varchar);
+
+--=========================================
+
+CREATE OR REPLACE FUNCTION suma_zamowien(nazwa varchar(10), dni integer) RETURNS numeric(7,2) AS
+$$ 
+DECLARE
+    w1 numeric(7,2) := 0.0; -- historia
+    w2 numeric(7,2) := 0.0; -- aktualne
+BEGIN
+    SELECT COALESCE(SUM(cena), 0.0) INTO w1 FROM zamowienia WHERE idnadawcy = nazwa; 
+    SELECT COALESCE(SUM(cena), 0.0) INTO w2 FROM historia WHERE idnadawcy = nazwa AND termin >= current_date - dni; 
+
+    RETURN w1 + w2;
+END;
+$$ LANGUAGE plpgsql;
+drop function suma_zamowien(varchar(10), integer);
+
+--=========================================
+
+-- Zwiększa cenę dla każdej kompozycji, jesli cena jest ponizej 50  to o 5 zl, 
+-- jesli pomiedzy 50 a 100 to o 10,  inaczej o 20p
+
+
+select * from kompozycje;
+insert into kompozycje values
+('t00', 'test0', 'opis', 40.0, 1, 2),
+('t01', 'test1', 'opis', 45.0, 1, 2),
+('t02', 'test2', 'opis', 50.0, 2, 4),
+('t03', 'test3', 'opis', 55.0, 3, 6),
+('t04', 'test4', 'opis', 60.0, 4, 8),
+('t05', 'test5', 'opis', 120.0, 5, 10);
+
+create temporary table kompozycje_temp as
+select * from kompozycje; 
+select * from kompozycje_temp;
+
+alter table kompozycje_temp add column stara_cena numeric;
+
+create or replace function podwyzka() returns void as
+$$
+declare
+	wiazanka record;
+    podwyzka kompozycje.cena%type;
+begin 
+    for wiazanka in select * from kompozycje_temp
+    loop
+
+        if wiazanka.cena < 50 then podwyzka = 5;
+        elseif wiazanka.cena >= 50 and wiazanka.cena < 100 then podwyzka = 10;
+        else podwyzka = 20;
+        end if;
+        
+        update kompozycje_temp set stara_cena = cena, cena = cena + podwyzka
+            where wiazanka.idkompozycji = kompozycje_temp.idkompozycji;
+    end loop;
+end;
+$$ language plpgsql;
+
+select * from kompozycje_temp;
+select podwyzka();
+drop function podwyzka();
+select * from kompozycje_temp;
+
+--=========================================
+
+
+-- Zwracanie zbioru rekordów (tabelę) przez funkcję
+-- Co się tak naprawdę dzieje, (jak dodawać kolejne wartości do finalnego "wyjścia")?
+
+select * from kompozycje;
+
+CREATE TEMPORARY TABLE testowa2(
+    id INTEGER,
+    id2 integer
+);
+
+CREATE OR REPLACE FUNCTION nazwa_funkcji() RETURNS SETOF testowa2 AS
+$$
+BEGIN
+    RETURN QUERY SELECT minimum, minimum FROM kompozycje;
+    RETURN NEXT (2, 2);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Wywołanie funkcji i wyświetlenie wyników
+select nazwa_funkcji();
+SELECT * from nazwa_funkcji();
+
+-- Usunięcie funkcji
+DROP FUNCTION IF EXISTS nazwa_funkcji();
+
+SELECT * FROM kompozycje;
+
+-- lab 10
+-- ================================================
+
+ Napisz zapytanie wyświetlające informacje na temat zamówień
+ (dataRealizacji, idzamowienia) używając odpowiedniego operatora
+ in/not in/exists/any/all, które:
+
+    zostały złożone przez klienta, który ma na imię Antoni,
+    zostały złożone przez klientów z mieszkań (zwróć uwagę na pole ulica),
+    ★ zostały złożone przez klienta z Krakowa do realizacji w listopadzie 2013 roku.
+
+select dataRealizacji, idzamowienia  from zamowienia
+where idklienta = any (select idklienta from klienci where nazwa ~* 'Antoni');
+
+select dataRealizacji, idzamowienia from zamowienia
+where idklienta = any ( select idklienta from klienci where ulica ~* '/');
+
+select dataRealizacji, idzamowienia from zamowienia
+where idzamowienia = any ( select idzamowienia from zamowienia where dataRealizacji::varchar ~~ '2013-11-__')
+and idklienta = any (select idklienta from klienci where miejscowosc = 'Kraków');
+
+-- Klienci, ktorzy zlozyli co najmniej 1 zamowienie (wersja z EXISTS):
+
+select * from klienci k where exists (select 1 from zamowienia z where k.idklienta = z.idklienta);
+
+-- Klienci, ktorzy nie zlozyli zadnych zamowien (wersja z EXISTS):
+
+select * from klienci k where not exists (select 1 from zamowienia z where k.idklienta = z.idklienta);
+
+
+-- Wszystkie czekoladki z kremem, ktorych koszt jest wyzszy od kosztu
+-- dowolnej czekoladki z truskawkami wystepujacej w pudelku 'alls':
+
+select * from czekoladki;
+
+select * from czekoladki where nadzienie = 'krem'
+and koszt > any (select koszt from czekoladki
+    natural join zawartosc where nadzienie = 'truskawki' and idpudelka = 'alls');
+
+
+
+-- Wszystkie czekoladki z kremem, ktorych koszt jest wyzszy od kosztu
+-- wszystkich czekoladek z truskawkami wystepujacych w pudelku 'alls':
+
+select * from czekoladki where nadzienie = 'krem'
+and koszt > all (select koszt from czekoladki
+    natural join zawartosc where nadzienie = 'truskawki' and idpudelka = 'alls');
+
+
+
+-- LAB 11
+/*
+11.1
+Napisz funkcję masaPudelka wyznaczającą masę pudełka jako
+sumę masy czekoladek w nim zawartych.
+Funkcja jako argument przyjmuje identyfikator pudełka.
+Przetestuj działanie funkcji na podstawie prostej instrukcji select.
+*/
+-- drop function masaPudelka(char(4));
+
+create or replace function masaPudelka(idpudelka_ char(4), out suma numeric(7,2)) as
+$$
+begin
+    select sum(masa*sztuk) into suma from czekoladki natural join zawartosc
+    where idpudelka = idpudelka_;
+end;
+$$ language plpgsql;
+
+SELECT masaPudelka('alls');
+ 
+/*
+11.2.1
+Napisz funkcję zysk obliczającą zysk jaki cukiernia uzyskuje
+ze sprzedaży jednego pudełka czekoladek, zakładając, że zysk
+ten jest różnicą między ceną pudełka, a kosztem wytworzenia zawartych
+w nim czekoladek i kosztem opakowania (0,90 zł dla każdego pudełka).
+Funkcja jako argument przyjmuje identyfikator pudełka. Przetestuj działanie
+funkcji na podstawie prostej instrukcji select.
+*/
+
+create or replace function zysk(_idpudelka char(4), out zysk numeric(7,2)) as
+$$
+declare
+    koszta numeric(7,2);
+begin
+    
+    select sum(koszt*sztuk)+0.9 into koszta from czekoladki
+        natural join zawartosc where idpudelka = _idpudelka;
+    select cena-koszta into zysk from pudelka where idpudelka = _idpudelka;
+
+end;
+$$ language plpgsql;
+
+select zysk('alls');
+
+/*
+11.2.2
+Napisz instrukcję select obliczającą zysk
+jaki cukiernia uzyska ze sprzedaży pudełek zamówionych w wybranym dniu.
+*/
+
+select sum(zysk(idpudelka)*sztuk) from zamowienia natural join artykuly where datarealizacji = '2013-10-30';
+
+/*
+11.3.1
+Napisz funkcję sumaZamowien obliczającą łączną wartość zamówień złożonych przez klienta,
+które czekają na realizację (są w tabeli Zamowienia). Funkcja jako argument przyjmuje
+identyfikator klienta. Przetestuj działanie funkcji.
+*/
+drop function sumaZamowien(integer);
+
+create or replace function sumaZamowien(idklienta_ integer, out suma numeric(7,2)) as
+$$
+declare
+
+begin
+    select sum(sztuk*cena) into suma from zamowienia
+        natural join artykuly
+        natural join pudelka
+        where idklienta = idklienta_;
+end;
+$$ language plpgsql;
+
+select sumaZamowien(7);
+
+/*
+11.3.2
+Napisz funkcję rabat obliczającą rabat jaki otrzymuje klient składający zamówienie.
+Funkcja jako argument przyjmuje identyfikator klienta.
+Rabat wyliczany jest na podstawie wcześniej złożonych zamówień w sposób następujący:
+
+    4 % jeśli wartość zamówień jest z przedziału 101-200 zł;
+    7 % jeśli wartość zamówień jest z przedziału 201-400 zł;
+    8 % jeśli wartość zamówień jest większa od 400 zł.
+*/
+drop function rabat(integer);
+create or replace function rabat(idklienta_ integer, out wartosc_rabatu numeric(7,2)) as
+$$
+declare
+    suma_zamowien numeric(7,2);
+begin
+    select sumaZamowien(idklienta_) into suma_zamowien;
+    wartosc_rabatu = suma_zamowien * case
+            when suma_zamowien > 100 and suma_zamowien <= 200 then 0.04
+            when suma_zamowien > 200 and suma_zamowien <= 400 then 0.07
+            when suma_zamowien > 400 then 0.08
+            else 1.0
+        end case;
+end;
+$$ language plpgsql;
+
+
+--select sumaZamowien(7);
+select rabat(7);
+
+
+/*
+11.4
+
+
+Napisz bezargumentową funkcję podwyzka, która dokonuje podwyżki kosztów produkcji czekoladek o:
+
+    3 gr dla czekoladek, których koszt produkcji jest mniejszy od 20 gr;
+    4 gr dla czekoladek, których koszt produkcji jest z przedziału 20-29 gr;
+    5 gr dla pozostałych.
+
+Funkcja powinna ponadto podnieść cenę pudełek o tyle o ile zmienił się koszt produkcji zawartych w nich czekoladek.
+
+Przed testowaniem działania funkcji wykonaj zapytania, które umieszczą w plikach dane na temat kosztów czekoladek i cen pudełek tak, aby można było później sprawdzić poprawność działania funkcji podwyzka. Przetestuj działanie funkcji.
+
+*/ 
+
+create temporary table czekoladki_temp as
+select * from czekoladki;
+
+create temporary table pudelka_temp as
+select * from pudelka;
+
+select * from czekoladki_temp;
+select * from pudelka_temp;
+
+create or replace function podwyzka() returns void as
+$$
+declare
+    r record;
+    r2 record;
+    zmiana numeric(7,2);
+    koszt_czekoladki numeric(7,2);
+begin
+    for r in select * from czekoladki_temp
+    loop
+        koszt_czekoladki = r.koszt;
+        zmiana = case
+                when koszt_czekoladki < 0.2 then 0.03
+                when koszt_czekoladki between 0.20 and 0.29 then 0.04
+                else 0.05
+            end case;
+
+        update czekoladki_temp set koszt = koszt + zmiana where idczekoladki = r.idczekoladki; 
+
+        for r2 in select * from zawartosc z where z.idczekoladki = r.idczekoladki
+        loop
+            update pudelka_temp set cena = cena + (r2.sztuk*zmiana) where idpudelka = r2.idpudelka;
+        end loop;
+
+    end loop;
+end;
+$$ language plpgsql;
+
+select * from czekoladki_temp;
+select * from pudelka_temp order by idpudelka;
+
+select podwyzka();
+
+select * from czekoladki_temp;
+select * from pudelka_temp order by idpudelka;
+
+/*
+11.6
+Napisz funkcję zwracającą informacje o zamówieniach złożonych przez klienta,
+którego identyfikator podawany jest jako argument wywołania funkcji.
+W/w informacje muszą zawierać: idzamowienia, idpudelka, datarealizacji.
+Przetestuj działanie funkcji. Uwaga: Funkcja zwraca więcej niż 1 wiersz!
+*/
+
+-- ten sposob jest niebezpieczny, bo nie zawsze dziala, lepiej normalnie returns table(...)
+create temporary table zamowienia_info(
+    r_idzamowienia integer,
+    r_idpudelka char(4),
+    r_datarealizacji date
+);
+
+select * from zamowienia_info;
+
+create or replace function info_o_zamowieniach(idklienta_ integer) returns setof zamowienia_info as
+$$
+declare
+    c record;
+begin
+    return query select idzamowienia, idpudelka, datarealizacji
+        from zamowienia natural join artykuly where idklienta = idklienta_;
+
+end;
+$$ language plpgsql;
+
+select * from info_o_zamowieniach(7);
+
+
+create or replace function info_o_zamowieniach(idklienta_ integer)
+returns table(
+    r_idzamowienia integer,
+    r_idpudelka char(4),
+    r_datarealizacji date
+) as
+$$
+declare
+    c record;
+begin
+    return query select idzamowienia, idpudelka, datarealizacji
+        from zamowienia natural join artykuly where idklienta = idklienta_;
+
+end;
+$$ language plpgsql;
+
+
+select * from info_o_zamowieniach(7);
+
+drop function info_o_zamowieniach(integer);
+/*
+11.7
+ Napisz funkcję rabat obliczającą rabat jaki otrzymuje klient kwiaciarni
+ składający zamówienie. Funkcję utwórz w schemacie kwiaciarnia.
+ Rabat wyliczany jest na podstawie zamówień bieżących (tabela zamowienia) i
+ z ostatnich siedmiu dni (tabela historia) w sposób następujący:
+
+    5 % jeśli wartość zamówień jest większa od 0 lecz nie większa od 100 zł;
+    10 % jeśli wartość zamówień jest z przedziału 101-400 zł;
+    15 % jeśli wartość zamówień jest z przedziału 401-700 zł;
+    20 % jeśli wartość zamówień jest większa od 700 zł.
+*/ 
+
+-- nie mam tej calej bazy danych so ffff
+select * from zamowienia;
+
+create or replace function rabat_kwiaty(idklienta_ integer, out wartosc_rabatu numeric(7,2)) as
+$$
+declare
+    wartosc_zamowien numeric(7,2);
+    wartosc_historii numeric(7,2);
+begin
+    select coalesce(sum(cena), 0.0) into wartosc_zamowien from zamowienia where idklienta = idklienta_;
+    select coalesce(sum(cena), 0.0) into wartosc_historii from historia where idklienta = idklienta_ and termin >= current_date - 7;
+
+    wartosc_zamowien = wartosc_zamowien + wartosc_historii;
+
+    wartosc_rabatu = wartosc_zamowien * case 
+    when wartosc_zamowien > 0 and wartosc_zamowien <= 100 then 0.05
+    when wartosc_zamowien > 100 and wartosc_zamowien <= 400 then 0.10
+    when wartosc_zamowien > 400 and wartosc_zamowien <= 700 then 0.15
+    when wartosc_zamowien > 700 then 0.20
+    else 1.0
+    end case;
+    
+
+end;
+$$ language plpgsql;
+
+select rabat_kwiaty(1);
