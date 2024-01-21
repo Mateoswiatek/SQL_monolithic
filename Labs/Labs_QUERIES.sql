@@ -1,7 +1,7 @@
 SET search_path TO siatkowka, kwiaciarnia, public;
 
 // Problem, bo zamiast w kwiaciarni mam wszystko w publicu.
-ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public; 
+ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, testowe; 
 
 SELECT * from mecze;
 SELECT * from czekoladki;
@@ -949,6 +949,26 @@ begin
 end;
 $$ language PLpgSQL;
 
+
+-- niby powinno dzialc ale chyba jednak nie
+create or replace function rabat(in _idklienta integer)
+returns numeric(7,2) as
+$$
+declare
+    _wartosc numeric(7,2);
+    -- rabat_pr numeric(7,2);
+begin
+    select sumaZamowien(_idklienta) into _wartosc;
+    -- return _wartosc * rabat_pr; - rabat to bylo to case.
+    return _wartosc * case _wartosc -- obliczanie rabatu w procentach
+            when between 101 and 200 then 0.04
+            when between 201 and 400 then 0.07
+            else 0.08
+        end case;
+end;
+$$ language PLpgSQL;
+
+
 select sumaZamowien(7);
 select rabat(7);
 
@@ -1599,3 +1619,113 @@ alter table pracownicy add constraint pracownicy_id_szefa_fk
 	foreign key(id_szefa) references pracownicy(id_pracownika);
 
 
+
+
+select nazwa, miasto from druzyny d
+where exists (select 1 from punktujace p natural join siatkarki where p.iddruzyny = d.iddruzyny and  punkty > 8 and pozycja = 'rozgrywajaca');
+
+select nazwa, miasto from druzyny d
+where not exists (select 1 from punktujace p natural join siatkarki where p.iddruzyny = d.iddruzyny and punkty > 25);
+
+select * from druzyny;
+select nazwa, miasto from druzyny 
+--where iddruzyny in  (select iddruzyny from punktujace where punkty > 25);
+where iddruzyny = any (select iddruzyny from punktujace where punkty > 25);
+
+select * from punktujace;
+
+select nazwa, miasto from druzyny d
+where not exists (select 1 from punktujace p
+    where p.iddruzyny = d.iddruzyny and punkty > 25);
+
+select idmeczu, termin, sum(punkty)
+from punktujace natural join mecze
+group by idmeczu, termin
+having sum(punkty) > (select avg(pkt)::numeric(5,2) from
+    (select sum(punkty) as pkt from punktujace group by idmeczu ) p );
+
+
+-- obliczenie sumy punktow dla kazdej druzyny w kazdym meczu.
+-- jeden rekord to jeden mecz i konkretna druzyna
+-- nastepnie grupujemy te wyniki po nazwie druzyny, więc w kazdej grupie mamy w kazdym rekordzie
+-- ilosc punktow jaka zdobyla druzyna w danym meczu. rekordow jest tyle ile rozgrywek rozegrala dana druzyna.
+-- nastepnie w kazdej z grup (czyli dla każdej druzyny) średnią, czyli sumujemy wszytkie punkty i dzielimy
+-- przez ilosc rekordow, bo tyle bylo mezcy
+
+-- dostajemy srednia ilosc punktow zdobytych przez kazda z druzyn na jeden mecz.
+with x as (
+    select idmeczu, iddruzyny, sum(punkty) as pkt
+    from punktujace
+    group by idmeczu, iddruzyny)
+
+select nazwa, avg(pkt)::numeric(7,2) srednia
+from x natural join druzyny
+group by nazwa
+order by srednia desc;
+
+-- with razem z usuwaniem i zwracaniem wartosci
+
+
+CREATE TEMPORARY TABLE zamowienia_temp AS
+SELECT * FROM zamowienia;
+
+CREATE TEMPORARY TABLE historia_tmp AS
+SELECT * FROM historia;
+
+select * from zamowienia_temp;
+select * from historia_tmp;
+
+
+-- select * from zamowienia_temp where datarealizacji = '2013-11-02';
+WITH x AS (
+    DELETE FROM zamowienia
+    WHERE datarealizacji = '2013-11-02' 
+    RETURNING *
+)
+
+insert into historia
+select idzamowienia, idklienta, idkompozycji, cena, datarealizacji from x;
+
+insert into zamowienia from x;
+
+
+
+-- oke dziala
+select * from kompozycje;
+insert into kompozycje values('j02', 'nazwa', 'opis', 40.5, 2, 5);
+
+with p as (update kompozycje set cena = cena * 1.1 returning *)
+select idkompozycji, nazwa, cena from p;
+
+-- ==================================================
+-- zmiana typu kolumny uzywajac using(...)
+-- ==================================================
+
+-- select * from klienci;
+
+CREATE TEMPORARY TABLE klienci_tmp AS
+SELECT * FROM klienci;
+
+--select * from klienci_tmp;
+
+--select length(nazwa) from klienci_tmp;
+
+alter table klienci_tmp add column dlugosc_nazwy integer;
+
+update klienci_tmp set dlugosc_nazwy = length(nazwa);
+
+-- select * from klienci_tmp;
+
+-- wywali, bo nie moze autoamtycznie rzutować
+-- alter table klienci_tmp alter column nazwa type integer;
+
+select * from klienci_tmp;
+
+-- mowimy w jaki sposob ma zamienic, uzywa tego co jest w using. to co jest w
+-- using ma zwracac typ ktory jest zgodny z nowym typem tutaj zapewnie można też
+-- wrzucić funkcję jakąś.
+
+alter table klienci_tmp alter column nazwa
+type integer using(length(nazwa));
+
+select * from klienci_tmp;
