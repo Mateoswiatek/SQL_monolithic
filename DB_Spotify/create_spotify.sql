@@ -223,7 +223,7 @@ INSERT INTO kolokwium1.wykonawcy (nazwa, kraj, data_debiutu, data_zakonczenia) V
 INSERT INTO kolokwium1.albumy (idwykonawcy, nazwa, gatunek, data_wydania) VALUES
 (1, 'Album1', 'Rock', '2021-02-15'),
 (2, 'Album2', 'Pop', '2018-06-30'),
-(3, 'Album3', 'Hip-Hop', '2005-10-12'),
+(3, 'Album3', 'Hip-Hop', '1910-01-07'),
 (4, 'Album4', 'Rock', '2010-03-25'),
 (5, 'Album5', 'Pop', '2014-09-08');
 -- Dodaj więcej...
@@ -239,7 +239,8 @@ INSERT INTO kolokwium1.utwory (idalbumu, nazwa, dlugosc) VALUES
 (3, 'Utwor6', 60),
 (3, 'Utwor7', 70),
 (3, 'Utwor8', 300),
-(3, 'Utwor9', 400);
+(3, 'Utwor9', 400),
+(3, 'Polskie Tango', 220);
 -- Dodaj więcej...
 
 -- Klienci
@@ -248,7 +249,8 @@ INSERT INTO kolokwium1.klienci (login, data_rejestracji, data_urodzenia) VALUES
 ('user2', '2021-12-15', '1985-11-10'),
 ('user3', '2023-02-28', '2000-08-05'),
 ('user4', '2020-06-10', '1992-03-15'),
-('user5', '2022-09-18', '1988-12-01');
+('user5', '2022-09-18', '1988-12-01'),
+('user6', '1990-09-18', '1900-12-01');
 -- Dodaj więcej...
 
 -- Playlisty
@@ -258,8 +260,15 @@ INSERT INTO kolokwium1.playlisty (idklienta, nazwa) VALUES
 (2, 'Faworyty'),
 (2, 'Ulubione'),
 (3, 'ImprezaMix'),
-(3, 'ImprezaMix2');
+(3, 'ImprezaMix2'),
+(6, 'Wszystkieee'),
+(6, 'Pusta'),
+(6, 'Jeden 220dlugosc'),
+(6, 'Dwa sr 150'),
+(6, 'PustaDwa');
 -- Dodaj więcej...
+
+select * from playlisty;
 
 -- Zawartość playlisty
 INSERT INTO kolokwium1.zawartosc (idplaylisty, idutworu) VALUES
@@ -270,7 +279,21 @@ INSERT INTO kolokwium1.zawartosc (idplaylisty, idutworu) VALUES
 (1, 7),
 (2, 3),
 (3, 4),
-(4, 5);
+(4, 5),
+(7, 1),
+(7, 2),
+(7, 3),
+(7, 4),
+(7, 5),
+(7, 6),
+(7, 7),
+(7, 8),
+(7, 9),
+(7, 10),
+(7, 11),
+(9, 4), -- dodanie do tego jednego 220
+(10, 4), -- dodanie do tej z dwoma o sredniej 150
+(10, 6);
 -- Dodaj więcej...
 
 -- Oceny utworów
