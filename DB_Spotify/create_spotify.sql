@@ -210,3 +210,71 @@ REFERENCES kolokwium1.utwory (idutworu) MATCH SIMPLE
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-end --
 
+/*
+
+-- Wykonawcy
+INSERT INTO kolokwium1.wykonawcy (nazwa, kraj, data_debiutu, data_zakonczenia) VALUES
+('Artysta1', 'Polska', '2000-01-01', NULL),
+('Artysta2', 'USA', '1995-05-10', '2010-12-31'),
+('Artysta3', 'Włochy', '2008-03-20', NULL),
+('Artysta4', 'Francja', '2012-08-05', NULL),
+('Artysta5', 'Niemcy', '1990-11-15', '2005-06-20'),
+-- Dodaj więcej...
+
+
+-- Albumy
+INSERT INTO kolokwium1.albumy (idwykonawcy, nazwa, gatunek, data_wydania) VALUES
+(1, 'Album1', 'Rock', '2021-02-15'),
+(1, 'Album2', 'Pop', '2018-06-30'),
+(2, 'Album3', 'Hip-Hop', '2005-10-12'),
+(3, 'Album4', 'Rock', '2010-03-25'),
+(4, 'Album5', 'Pop', '2014-09-08'),
+-- Dodaj więcej...
+
+-- Utwory
+INSERT INTO kolokwium1.utwory (idalbumu, nazwa, dlugosc) VALUES
+(1, 'Utwor1', 180),
+(1, 'Utwor2', 210),
+(2, 'Utwor3', 160),
+(3, 'Utwor4', 220),
+(3, 'Utwor5', 190),
+-- Dodaj więcej...
+
+-- Playlisty
+INSERT INTO kolokwium1.playlisty (idklienta, nazwa) VALUES
+(1, 'MojaPlaylista1'),
+(1, 'MojaPlaylista2'),
+(2, 'Faworyty'),
+(2, 'Ulubione'),
+(3, 'ImprezaMix'),
+-- Dodaj więcej...
+
+-- Zawartość playlisty
+INSERT INTO kolokwium1.zawartosc (idplaylisty, idutworu) VALUES
+(1, 1),
+(1, 2),
+(2, 3),
+(3, 4),
+(4, 5),
+-- Dodaj więcej...
+
+-- Klienci
+INSERT INTO kolokwium1.klienci (login, data_rejestracji, data_urodzenia) VALUES
+('user1', '2022-01-01', '1990-05-20'),
+('user2', '2021-12-15', '1985-11-10'),
+('user3', '2023-02-28', '2000-08-05'),
+('user4', '2020-06-10', '1992-03-15'),
+('user5', '2022-09-18', '1988-12-01'),
+-- Dodaj więcej...
+
+-- Oceny utworów
+INSERT INTO kolokwium1.oceny (idutworu, idklienta, lubi) VALUES
+(1, 1, true),
+(2, 1, false),
+(3, 2, true),
+(4, 3, true),
+(5, 4, false),
+-- Dodaj więcej...
+
+*/
+
