@@ -1,7 +1,16 @@
 SET search_path TO siatkowka, kwiaciarnia, public;
 
 // Problem, bo zamiast w kwiaciarni mam wszystko w publicu.
-ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, testowe; 
+ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, testowe, spotify; 
+
+
+INSERT INTO test (id, name) VALUES
+(1, 'test1'),
+(2, 'test2')
+ON CONFLICT DO NOTHING;
+
+
+
 
 SELECT * from mecze;
 SELECT * from czekoladki;
@@ -869,7 +878,7 @@ SELECT masaPudelka2('alls');
 
 
 11.2
-create or replace function zysk(in _idpudelka char(4))
+create or replace function zysk(in idpudelka_ char(4))
 returns numeric(7, 2) as
 $$
 declare 
@@ -877,9 +886,9 @@ declare
 begin
     select sum(c.koszt * z.sztuk) into naszKoszt
     from zawartosc z join czekoladki c using(idczekoladki)
-    where z.idpudelka = _idpudelka;
+    where z.idpudelka = idpudelka_;
 
-    return (select cena from pudelka where idpudelka = _idpudelka) - naszKoszt - 0.90;
+    return (select cena from pudelka where idpudelka = idpudelka_) - naszKoszt - 0.90;
     
 end;
 $$ language PLpgSQL;
@@ -1987,6 +1996,15 @@ select nazwa_funkcji();
 select * from test;
 drop function nazwa_funkcji();
 
+-- mozna to szybciej zrobic: 
+create temporary table test(
+id numeric(7,2)
+);
+with x as (update kompozycje set cena = cena * 1.1 returning *)
+
+insert into test select x.cena from x;
+
+
 
 --=========================================
 create or replace function nazwa_funckji(idklienta_ integer, out suma numeric) as
@@ -2057,12 +2075,14 @@ create temporary table test(
 CREATE TEMPORARY TABLE klienci_tmp AS
 SELECT * FROM klienci;
 
+select * from klienci_tmp;
+
 create function nazwa_funkcji() returns void as
 $$
 declare 
     w record;
 begin
-	for w in update klienci_tmp set idklienta = idklienta + 100 where idklienta < 40 returning *
+	for w in update klienci_tmp set idklienta = idklienta + 100, nazwa = 'AAAAA' where idklienta < 40 returning *
 	loop
 		insert into test values(w.idklienta);
 	end loop;
@@ -2306,15 +2326,15 @@ Funkcja jako argument przyjmuje identyfikator pudełka. Przetestuj działanie
 funkcji na podstawie prostej instrukcji select.
 */
 
-create or replace function zysk(_idpudelka char(4), out zysk numeric(7,2)) as
+create or replace function zysk(idpudelka_ char(4), out zysk numeric(7,2)) as
 $$
 declare
     koszta numeric(7,2);
 begin
     
     select sum(koszt*sztuk)+0.9 into koszta from czekoladki
-        natural join zawartosc where idpudelka = _idpudelka;
-    select cena-koszta into zysk from pudelka where idpudelka = _idpudelka;
+        natural join zawartosc where idpudelka = idpudelka_;
+    select cena-koszta into zysk from pudelka where idpudelka = idpudelka_;
 
 end;
 $$ language plpgsql;
@@ -2534,3 +2554,34 @@ end;
 $$ language plpgsql;
 
 select rabat_kwiaty(1);
+
+
+INSERT INTO test (id, name) VALUES
+(1, 'test1'),
+(2, 'test2')
+ON CONFLICT DO NOTHING;
+
+
+copy zamowienia from stdin with (null '', delimiter '|');
+149|55|2013-12-20
+\.
+
+-- przyspieszenie tego, odrazu inserta dajemy.
+create temporary table test(
+id numeric(7,2)
+);
+
+create function nazwa_funkcji(cena_ numeric(7,2)) returns void as
+$$
+declare
+w record;
+begin
+
+    with x as (update kompozycje set cena = cena * 1.1 where cena > cena_ returning *)
+    insert into test select x.cena from x;
+end;
+$$ language plpgsql;
+
+select nazwa_funkcji(60.0);
+select * from test;
+drop function nazwa_funkcji(numeric(7,2));
