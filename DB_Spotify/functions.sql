@@ -18,14 +18,11 @@ Funkcja zwraca tabelę zawierającą wszystkie utwory
 idplaylisty_do po operacji kopiowania.
 */
 
-delete from zawartosc;
-INSERT INTO kolokwium1.zawartosc (idplaylisty, idutworu) VALUES
-(1, 1),
-(1, 2),
-(2, 3),
-(2, 1),
-(3, 4),
-(4, 5);
+create temporary table zawartosc_tmp
+as select * from zawartosc;
+
+create temporary table oceny_tmp
+as select * from oceny;
 
 drop function if exists uzupelnij_playliste(integer, integer, boolean);
 create or replace function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
@@ -41,19 +38,24 @@ declare
     r record;
 begin
     owner = (select idklienta from playlisty where idplaylisty = idplaylisty_do);
-    for r in select * from zawartosc z where idplaylisty = idplaylisty_od and z.idutworu not in (select idutworu from zawartosc where idplaylisty = idplaylisty_do)
+    for r in select * from zawartosc_tmp z where idplaylisty = idplaylisty_od and z.idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = idplaylisty_do)
     loop
-        insert into zawartosc values(idplaylisty_do, r.idutworu);
-        if polub and not exists(select 1 from oceny where idklienta = owner and idutworu = r.idutworu) then
-            insert into oceny values(r.idutworu, owner, TRUE);
+        insert into zawartosc_tmp values(idplaylisty_do, r.idutworu);
+        if polub and not exists(select 1 from oceny_tmp where idklienta = owner and idutworu = r.idutworu) then
+            insert into oceny_tmp values(r.idutworu, owner, TRUE);
         end if;
     end loop;
 
-    return query select idutworu, idalbumu, nazwa, dlugosc from utwory natural join zawartosc where idplaylisty = idplaylisty_do;
+    return query select idutworu, idalbumu, nazwa, dlugosc from utwory natural join zawartosc_tmp where idplaylisty = idplaylisty_do;
 end;
 $$ language plpgsql;
 
+select * from zawartosc where idplaylisty = 1;
+select * from zawartosc where idplaylisty = 2;
+select * from oceny_tmp;
+select 'a tera jest funkcja i nowa tabela polubien';
 select * from uzupelnij_playliste(1, 2, TRUE);
+select * from oceny_tmp;
 
 /*
 1.
