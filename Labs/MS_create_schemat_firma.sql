@@ -1,29 +1,29 @@
--- By Mateusz Świątek
+-- BY Mateusz Świątek
 -- lab 9
 
-create temporary table dzialy(
-    iddzialu char(5) primary key,
-    nazwa varchar(32) not null,
-    likalizacja varchar(24) not null,
-    kierownik integer not null
+CREATE temporary TABLE dzialy(
+    iddzialu CHAR(5) PRIMARY KEY,
+    nazwa VARCHAR(32) NOT NULL,
+    likalizacja VARCHAR(24) NOT NULL,
+    kierownik INTEGER NOT NULL
 );
 
 
 
-create temporary table pracownicy(
-    idpracownika serial primary key,
-    nazwisko varchar(32) not null,
-    imie varchar(16) not null,
-    dataUrodzenia date not null,
-    dzial char(5) not null,
-    stanowisko varchar(24),
-    pobory numeric(10,2)
+CREATE temporary TABLE pracownicy(
+    idpracownika serial PRIMARY KEY,
+    nazwisko VARCHAR(32) NOT NULL,
+    imie VARCHAR(16) NOT NULL,
+    dataUrodzenia DATE NOT NULL,
+    dzial CHAR(5) NOT NULL,
+    stanowisko VARCHAR(24),
+    pobory NUMERIC(10,2)
 );
 
-alter table pracownicy
-    add constraint pracownicy_dzial_fk foreign key(dzial) references dzialy(iddzialu) on update cascade;
-alter table dzialy
-add constraint dzialy_kierownik_fk foreign key(kierownik) references pracownicy(idpracownika) on update cascade;
+ALTER TABLE pracownicy
+    add CONSTRAINT pracownicy_dzial_fk FOREIGN KEY(dzial) REFERENCES dzialy(iddzialu) ON UPDATE cascade;
+ALTER TABLE dzialy
+add CONSTRAINT dzialy_kierownik_fk FOREIGN KEY(kierownik) REFERENCES pracownicy(idpracownika) ON UPDATE cascade;
 
-select * from pracownicy;
-select * from dzialy;
+SELECT * FROM pracownicy;
+SELECT * FROM dzialy;

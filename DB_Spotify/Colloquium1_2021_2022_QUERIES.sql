@@ -6,8 +6,8 @@
 1.
 SELECT nazwa, ceil(dlugosc/60.0) AS czAS
     FROM utwory
-    WHERE dlugosc BETWEEN 60 and 300
-    ORDER BY nazwa ASc, czAS DESC;
+    WHERE dlugosc BETWEEN 60 AND 300
+    ORDER BY nazwa ASC, czAS DESC;
 
 2.
 -- nie skoczyli
@@ -33,17 +33,17 @@ SELECT DISTINCT gatunek
 with x AS (
     (SELECT idutworu
         FROM klienci
-        natural JOIN playlisty
-        natural JOIN zawartosc
+        NATURAL JOIN playlisty
+        NATURAL JOIN zawartosc
         WHERE login = 'kamila')
-    except
+    EXCEPT
     (selet idutworu 
         FROM klienci
         JOIN oceny
         WHERE login = 'kamila')
 )
 
-SELECT nazwa, coalesce(avg(lubi::INT), 0.5)
+SELECT nazwa, coalesce(AVG(lubi::INT), 0.5)
     FROM utwory
     LEFT JOIN oceny USING(idutworu)
     WHERE idutworu IN x
@@ -69,8 +69,8 @@ UPDATE zawartosc z
 1.
 SELECT nazwa, floor(dlugosc/60.0) AS Czas
     FROM utwory
-    WHERE dlugosc BETWEEN 120 and 600
-    ORDER BY nazwa DESC, Czas ASc;
+    WHERE dlugosc BETWEEN 120 AND 600
+    ORDER BY nazwa DESC, Czas ASC;
 
 2.
 (SELECT idwykonawcow
@@ -99,15 +99,15 @@ with x AS (
         WHERE
         login = 'kamila')
 
-SELECT nazwa, coalesce(avg(lubi::int), 0.5)
+SELECT nazwa, coalesce(AVG(lubi::INT), 0.5)
     FROM utwory
     LEFT JOIN oceny USING(idutworu) 
-    wHERE idutworu NOT IN x
+    WHERE idutworu NOT IN x
     GROUP BY nazwa, idutworu;
 
 5.
-insert into playlisty(idplaylisty, idklienta, nazwa)
+INSERT INTO playlisty(idplaylisty, idklienta, nazwa)
 values( 30, (SELECT idklienta FROM playlisty WHERE idplaylisty = 20), 'kopiapopu')
 
-insert into zawartosc(idplaylisty, idutworu)
+INSERT INTO zawartosc(idplaylisty, idutworu)
 SELECT 30, idutworu FROM zawartosc WHERE idplaylisty = 20;

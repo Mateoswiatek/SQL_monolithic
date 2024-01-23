@@ -1,87 +1,87 @@
--- By Mateusz Świątek
+-- BY Mateusz Świątek
 -- lab 4
 
-create table diety(
-    id_diety serial primary key,
-    nazwa varchar(150) not null,
-    gluten boolean not null,
-    laktoza boolean not null,
-    wege boolean not null,
-    keto boolean not null,
-    opakowania_eko boolean not null,
-    cena_dzien numeric(5,2) not null
+CREATE TABLE diety(
+    id_diety serial PRIMARY KEY,
+    nazwa VARCHAR(150) NOT NULL,
+    gluten BOOLEAN NOT NULL,
+    laktoza BOOLEAN NOT NULL,
+    wege BOOLEAN NOT NULL,
+    keto BOOLEAN NOT NULL,
+    opakowania_eko BOOLEAN NOT NULL,
+    cena_dzien NUMERIC(5,2) NOT NULL
 );
 
-create table dania (
-    id_dania serial primary key,
-    nazwa varchar(255) not null,
-    gramatura integer not null,
-    kalorycznosc integer not null,
-    kuchnia varchar(100),
-    wymaga_podgrzania boolean not null,
-    koszt_produkcji numeric(5,2)
+CREATE TABLE dania (
+    id_dania serial PRIMARY KEY,
+    nazwa VARCHAR(255) NOT NULL,
+    gramatura INTEGER NOT NULL,
+    kalorycznosc INTEGER NOT NULL,
+    kuchnia VARCHAR(100),
+    wymaga_podgrzania BOOLEAN NOT NULL,
+    koszt_produkcji NUMERIC(5,2)
 );
 
-create table dostepnosc(
-    id_diety integer not null,
-    id_dania integer not null,
-    data_dostawy date not null,
-    pora_dnia varchar(100) not null
+CREATE TABLE dostepnosc(
+    id_diety INTEGER NOT NULL,
+    id_dania INTEGER NOT NULL,
+    data_dostawy DATE NOT NULL,
+    pora_dnia VARCHAR(100) NOT NULL
 );
 
-create table wybory(
-    id_zamowienia integer not null, -- aby potem zamienic constraint na alter table
-    id_dania integer not null,
-    data_dostawy date not null,
-    constraint wybory_pk primary key(id_zamowienia, id_dania, data_dostawy)
+CREATE TABLE wybory(
+    id_zamowienia INTEGER NOT NULL, -- aby potem zamienic CONSTRAINT na ALTER TABLE
+    id_dania INTEGER NOT NULL,
+    data_dostawy DATE NOT NULL,
+    CONSTRAINT wybory_pk PRIMARY KEY(id_zamowienia, id_dania, data_dostawy)
 );
 
 -- usuwanie ograniczen
-alter table dostepnosc
-	drop constraint dostepnosc_pk,
-	drop constraint dostepnosc_iddiety_fk,
-	drop constraint dostepnosc_iddania_fk,
-    drop constraint pora_dnia_c;
+ALTER TABLE dostepnosc
+	DROP CONSTRAINT dostepnosc_pk,
+	DROP CONSTRAINT dostepnosc_iddiety_fk,
+	DROP CONSTRAINT dostepnosc_iddania_fk,
+    DROP CONSTRAINT pora_dnia_c;
 
-alter table dania
-	drop constraint dlugsoc_nazwy_dania_c;
+ALTER TABLE dania
+	DROP CONSTRAINT dlugsoc_nazwy_dania_c;
 
 -- usuwanie zawartosci
--- delete from diety; delete from dania; delete from dostepnosc; delete from wybory;
+-- DELETE FROM diety; DELETE FROM dania; DELETE FROM dostepnosc; DELETE FROM wybory;
 
 -- dodawanie ograniczen
-alter table dostepnosc
-	add constraint dostepnosc_pk primary key(id_diety, id_dania, data_dostawy),
-	add constraint dostepnosc_iddiety_fk foreign key(id_diety) references diety(id_diety),
-	add constraint dostepnosc_iddania_fk foreign key(id_dania) references dania(id_dania),
-    add constraint pora_dnia_c check(pora_dnia in ('śniadanie', 'drugie śniadanie', 'obiad', 'podwieczorek', 'kolacja')); -- ewentualnie enum, lepiej tabele słownikowe
+ALTER TABLE dostepnosc
+	add CONSTRAINT dostepnosc_pk PRIMARY KEY(id_diety, id_dania, data_dostawy),
+	add CONSTRAINT dostepnosc_iddiety_fk FOREIGN KEY(id_diety) REFERENCES diety(id_diety),
+	add CONSTRAINT dostepnosc_iddania_fk FOREIGN KEY(id_dania) REFERENCES dania(id_dania),
+    add CONSTRAINT pora_dnia_c CHECK(pora_dnia IN ('śniadanie', 'drugie śniadanie', 'obiad', 'podwieczorek', 'kolacja')); -- ewentualnie ENUM, lepiej tabele słownikowe
 
-alter table dania
-	add constraint dlugsoc_nazwy_dania_c check(length(nazwa) >= 5);
+ALTER TABLE dania
+	add CONSTRAINT dlugsoc_nazwy_dania_c CHECK(length(nazwa) >= 5);
 
-select * from diety;
-select * from dania;
-select * from dostepnosc;
-select * from wybory;
+SELECT * FROM diety;
+SELECT * FROM dania;
+SELECT * FROM dostepnosc;
+SELECT * FROM wybory;
 
--- insert into dostepnosc values(1, 1, '2024-01-20', 'śniadaniee'); -- git dziala ograniczenie
+-- INSERT INTO dostepnosc values(1, 1, '2024-01-20', 'śniadaniee'); -- git dziala ograniczenie
 
 -- ===========================================================
 -- TEST zad 4b
--- Korzystając z operatorów any oraz all (obu) napisz zapytanie SQL pobierające z bazy ID wszystkich
--- dań, które co najmniej raz były dostępne na kolację, a które jednocześnie ani razu nie zostały wybrane w
+-- Korzystając z operatorów ANY oraz all (obu) napisz zapytanie SQL pobierające z bazy ID wszystkich
+-- dań, które co najmniej raz BYły dostępne na kolację, a które jednocześnie ani razu nie zostały wybrane w
 -- roku 2023. Nie używaj złączeń JOIN.
 -- ===========================================================
 
-insert into dania values
-    (1, 'danie1', 1, 100, 'Francja', false, 1.0),
-    (2, 'danie2', 2, 200, null,      false, 2.0),
-    (3, 'danie3', 3, 300, 'Polska',  false, 3.0),
-    (4, 'danie4', 4, 400, 'Polska',  false, 4.0);
+INSERT INTO dania values
+    (1, 'danie1', 1, 100, 'Francja', FALSE, 1.0),
+    (2, 'danie2', 2, 200, NULL,      FALSE, 2.0),
+    (3, 'danie3', 3, 300, 'Polska',  FALSE, 3.0),
+    (4, 'danie4', 4, 400, 'Polska',  FALSE, 4.0);
 
-select * from dania;
+SELECT * FROM dania;
 
-insert into wybory values
+INSERT INTO wybory values
     (1, 1, '2023-07-19'),
     (1, 1, '2023-07-20'),
     (2, 2, '2024-03-20'),
@@ -91,16 +91,16 @@ insert into wybory values
     (4, 4, '2023-02-20'),
     (4, 4, '2023-02-27');
 
-select * from wybory;
+SELECT * FROM wybory;
 
-insert into diety values
+INSERT INTO diety values
     (1, 'nazwa1'),
     (2, 'nazwa2'),
     (3, 'nazwa3');
 
-select * from diety;
+SELECT * FROM diety;
 
-insert into dostepnosc values
+INSERT INTO dostepnosc values
     (1, 1, '2023-07-19', 'śniadanie'), -- TF
     (1, 1, '2023-07-20', 'kolacja'),
     (2, 2, '2024-03-20', 'kolacja'), -- TT
@@ -110,21 +110,21 @@ insert into dostepnosc values
     (3, 4, '2023-02-20', 'obiad'), -- FF
     (3, 4, '2023-02-27', 'śniadanie');
 
-select * from dostepnosc;
+SELECT * FROM dostepnosc;
 
 -- Pierwszy warunek
-select id_dania from dostepnosc
-where
+SELECT id_dania FROM dostepnosc
+WHERE
 pora_dnia = 'kolacja';
 
 -- X F: -> te ktore niespelniaja drugiego warunku:
-select id_dania from wybory where date_part('year', data_dostawy) = 2023;
+SELECT id_dania FROM wybory WHERE date_part('year', data_dostawy) = 2023;
 
--- Razem -> tylkok index 2 powinien byc poprawny.
+-- Razem -> tylkok INDEX 2 powinien byc poprawny.
 
 -- ZAD4
 
-select id_dania from dostepnosc
-where
+SELECT id_dania FROM dostepnosc
+WHERE
 pora_dnia = 'kolacja'
-and id_dania  != all (select id_dania from wybory where date_part('year', data_dostawy) = 2023);
+AND id_dania  != all (SELECT id_dania FROM wybory WHERE date_part('year', data_dostawy) = 2023);

@@ -1,15 +1,15 @@
-ALTER ROLE matrxteo SET search_path TO kolokwium1;
+SET search_path TO spotify;
 
-select * from wykonawcy;
-select * from playlisty natural join zawartosc;
+SELECT * FROM wykonawcy;
+SELECT * FROM playlisty NATURAL JOIN zawartosc;
 
 /*
 Napisz funkcje o nazwie uzupelnij_playliste która
 przyjmuje trzy argumenty: idplaylisty_od
-(int),idplaylisty_do (int), polub (boolean). Funkcja
+(INT),idplaylisty_do (INT), polub (BOOLEAN). Funkcja
 skopiuje z playlisty idplaylisty_od do playlisty
 idplaylisty_do utwory, które nie występują na tej drugiej.
-Jeżeli parametr polub jest równy TRUE to dla
+Jeżeli parametr polub jest równy TRUE TO dla
 skopiowanych utworów funkcja doda oceny pozytywne
 (lubi = TRUE), wystawione przez właściciela drugiej
 playlisty, ale tylko jeśli jeszcze nie mają od niego ocen.
@@ -18,127 +18,127 @@ Funkcja zwraca tabelę zawierającą wszystkie utwory
 idplaylisty_do po operacji kopiowania.
 */
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
-create temporary table oceny_tmp
-as select * from oceny;
+CREATE temporary TABLE oceny_tmp
+AS SELECT * FROM oceny;
 
-drop function if exists uzupelnij_playliste(integer, integer, boolean);
-create or replace function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
-returns table (
-r_idutworu integer,
-r_idalbumu integer,
-r_nazwa varchar(100),
-r_dlugosc integer
-) as
+DROP FUNCTION IF EXISTS uzupelnij_playliste(INTEGER, INTEGER, BOOLEAN);
+CREATE OR REPLACE FUNCTION uzupelnij_playliste(idplaylisty_od INTEGER, idplaylisty_do INTEGER, polub BOOLEAN)
+RETURNS TABLE (
+r_idutworu INTEGER,
+r_idalbumu INTEGER,
+r_nazwa VARCHAR(100),
+r_dlugosc INTEGER
+) AS
 $$
-declare
-    owner integer;
-    r record;
-begin
-    owner = (select idklienta from playlisty where idplaylisty = idplaylisty_do);
-    -- ewentulanie tutaj dac except (te od union, intersect, except) 
-    for r in select * from zawartosc_tmp z where idplaylisty = idplaylisty_od and z.idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = idplaylisty_do)
-    loop
-        insert into zawartosc_tmp values(idplaylisty_do, r.idutworu);
-        -- alternatywnie "where r.idutworu not in ()
-        if polub and not exists(select 1 from oceny_tmp where idklienta = owner and idutworu = r.idutworu) then
-            insert into oceny_tmp values(r.idutworu, owner, TRUE);
-        end if;
-    end loop;
+DECLARE
+    owner INTEGER;
+    r RECORD;
+BEGIN
+    owner = (SELECT idklienta FROM playlisty WHERE idplaylisty = idplaylisty_do);
+    -- ewentulanie tutaj dac EXCEPT (te od UNION, INTERSECT, EXCEPT) 
+    FOR r IN SELECT * FROM zawartosc_tmp z WHERE idplaylisty = idplaylisty_od AND z.idutworu NOT IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = idplaylisty_do)
+    LOOP
+        INSERT INTO zawartosc_tmp values(idplaylisty_do, r.idutworu);
+        -- alternatywnie "WHERE r.idutworu NOT IN ()
+        IF polub AND NOT EXISTS(SELECT 1 FROM oceny_tmp WHERE idklienta = owner AND idutworu = r.idutworu) THEN
+            INSERT INTO oceny_tmp values(r.idutworu, owner, TRUE);
+        END IF;
+    END LOOP;
 
-    return query select idutworu, idalbumu, nazwa, dlugosc from utwory natural join zawartosc_tmp where idplaylisty = idplaylisty_do;
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT idutworu, idalbumu, nazwa, dlugosc FROM utwory NATURAL JOIN zawartosc_tmp WHERE idplaylisty = idplaylisty_do;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from zawartosc where idplaylisty = 1;
-select * from zawartosc where idplaylisty = 2;
-select * from oceny_tmp;
-select 'a tera jest funkcja i nowa tabela polubien';
-select * from uzupelnij_playliste(1, 2, TRUE);
-select * from oceny_tmp;
+SELECT * FROM zawartosc WHERE idplaylisty = 1;
+SELECT * FROM zawartosc WHERE idplaylisty = 2;
+SELECT * FROM oceny_tmp;
+SELECT 'a tera jest funkcja i nowa tabela polubien';
+SELECT * FROM uzupelnij_playliste(1, 2, TRUE);
+SELECT * FROM oceny_tmp;
 
 /*
 1.
 Napisz funkcje czasTrwania, która jako parametr
-przyjmuję idplaylisty (int) i zwraca czas trwania danej
+przyjmuję idplaylisty (INT) i zwraca czas trwania danej
 playlisty
 */
 
-drop function if exists czasTrwania(integer);
-create or replace function czasTrwania(idplaylisty_ integer, out czas integer) as
+DROP FUNCTION IF EXISTS czasTrwania(INTEGER);
+CREATE OR REPLACE FUNCTION czasTrwania(idplaylisty_ INTEGER, OUT czas INTEGER) AS
 $$
-declare
+DECLARE
 
-begin
-    select sum(dlugosc) into czas from zawartosc natural join utwory where idplaylisty = idplaylisty_; 
-end;
-$$ language plpgsql;
+BEGIN
+    SELECT SUM(dlugosc) INTO czas FROM zawartosc NATURAL JOIN utwory WHERE idplaylisty = idplaylisty_; 
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from playlisty natural join zawartosc join utwory using(idutworu) where idplaylisty = 1;
+SELECT * FROM playlisty NATURAL JOIN zawartosc JOIN utwory USING(idutworu) WHERE idplaylisty = 1;
 
-select czasTrwania(1);
+SELECT czasTrwania(1);
 
 /*
 2.
 Napisz bezargumentową funkcję max_play która zwróci
-idplaylisty (int) na której znajduje się najwięcej utworów -
-jeśli takich playlist jest więcej to zwróć jeden wynik
+idplaylisty (INT) na której znajduje się najwięcej utworów -
+jeśli takich playlist jest więcej TO zwróć jeden wynik
 */
 
-create or replace function max_play(out idplaylisty_max integer) as
+CREATE OR REPLACE FUNCTION max_play(OUT idplaylisty_max INTEGER) AS
 $$
-declare
+DECLARE
 
-begin
-    select idplaylisty into idplaylisty_max from zawartosc group by idplaylisty order by count(idutworu) desc limit 1;
-end;
-$$ language plpgsql;
-select idplaylisty, count(*) from zawartosc group by idplaylisty order by count(*) desc;
-select max_play();
+BEGIN
+    SELECT idplaylisty INTO idplaylisty_max FROM zawartosc GROUP BY idplaylisty ORDER BY COUNT(idutworu) DESC LIMIT 1;
+END;
+$$ LANGUAGE PLPGSQL;
+SELECT idplaylisty, COUNT(*) FROM zawartosc GROUP BY idplaylisty ORDER BY COUNT(*) DESC;
+SELECT max_play();
 
 /*
 3.
 Napisz bezargumentową funkcję min_play która zwróci
 idplaylist (TABLE) na których znajduje się najmniej
-utworów - playlisty mogą być puste, wtedy przyjmij że jest
+utworów - playlisty mogą BYć puste, wtedy przyjmij że jest
 na nich 0 utworów
 */
-drop function min_play();
-create or replace function min_play() returns table(r_idplaylisty integer, r_ilosc_utworow integer) as
+DROP FUNCTION min_play();
+CREATE OR REPLACE FUNCTION min_play() RETURNS TABLE(r_idplaylisty INTEGER, r_ilosc_utworow INTEGER) AS
 $$
-declare
-    min integer;
-begin
-    select coalesce(min(cnt), 0) into min from (select count(idutworu) as cnt from playlisty left join zawartosc using(idplaylisty) group by idplaylisty);
+DECLARE
+    MIN INTEGER;
+BEGIN
+    SELECT coalesce(MIN(cnt), 0) INTO MIN FROM (SELECT COUNT(idutworu) AS cnt FROM playlisty LEFT JOIN zawartosc USING(idplaylisty) GROUP BY idplaylisty);
 
-    return query select idplaylisty, min from playlisty left join zawartosc using(idplaylisty) group by idplaylisty having count(idutworu) = min;
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT idplaylisty, MIN FROM playlisty LEFT JOIN zawartosc USING(idplaylisty) GROUP BY idplaylisty HAVING COUNT(idutworu) = MIN;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from playlisty left join zawartosc using(idplaylisty);
-select idplaylisty, count(idutworu) from playlisty left join zawartosc using(idplaylisty) group by idplaylisty;
+SELECT * FROM playlisty LEFT JOIN zawartosc USING(idplaylisty);
+SELECT idplaylisty, COUNT(idutworu) FROM playlisty LEFT JOIN zawartosc USING(idplaylisty) GROUP BY idplaylisty;
 
-select * from min_play();
+SELECT * FROM min_play();
 
 /*
 4.
 Napisz funkcje utwory która przyjmuje nazwę playlisty
-(VaRCHAR(30)) i zwraca listę utworów (ich nazwy) które
+(VARCHAR(30)) i zwraca listę utworów (ich nazwy) które
 się na niej znajdują
 */
-create or replace function utwory_na_playliscie(idplaylisty_ integer) returns table(nazwy_utworow varchar(100)) as
+CREATE OR REPLACE FUNCTION utwory_na_playliscie(idplaylisty_ INTEGER) RETURNS TABLE(nazwy_utworow VARCHAR(100)) AS
 $$
-declare
+DECLARE
 
-begin
-    return query select nazwa from zawartosc natural join utwory where idplaylisty = idplaylisty_;
-end;
-$$ language plpgsql;
+BEGIN
+    RETURN QUERY SELECT nazwa FROM zawartosc NATURAL JOIN utwory WHERE idplaylisty = idplaylisty_;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from zawartosc natural join utwory;
-select * from utwory_na_playliscie(2);
+SELECT * FROM zawartosc NATURAL JOIN utwory;
+SELECT * FROM utwory_na_playliscie(2);
 
 /*
 5.
@@ -148,19 +148,19 @@ jeśli nie znajduje się na żadnej funkcja ma zwrócić 0
 */
 
 
-create or replace function utwor_na_playlistach(nazwa_utworu varchar(100), out liczba_playlist integer) as
+CREATE OR REPLACE FUNCTION utwor_na_playlistach(nazwa_utworu VARCHAR(100), OUT liczba_playlist INTEGER) AS
 $$
-declare
+DECLARE
 
-begin
-    select count(distinct idplaylisty) into liczba_playlist from utwory natural join zawartosc where nazwa = nazwa_utworu;
-end;
-$$ language plpgsql;
+BEGIN
+    SELECT COUNT(distinct idplaylisty) INTO liczba_playlist FROM utwory NATURAL JOIN zawartosc WHERE nazwa = nazwa_utworu;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from utwory left join zawartosc using(idutworu);
-select utwor_na_playlistach('Utwor1');
-select utwor_na_playlistach('Utwor2');
-select utwor_na_playlistach('Utwor6');
+SELECT * FROM utwory LEFT JOIN zawartosc USING(idutworu);
+SELECT utwor_na_playlistach('Utwor1');
+SELECT utwor_na_playlistach('Utwor2');
+SELECT utwor_na_playlistach('Utwor6');
 
 
 /*
@@ -169,17 +169,17 @@ Napisz funkcje puste_playlisty która zwraca listę
 playlist(ich id) na których nie znajdują się żadne utwory
 */
 
-create or replace function puste_playlisty() returns table(idplaylisty_ integer) as
+CREATE OR REPLACE FUNCTION puste_playlisty() RETURNS TABLE(idplaylisty_ INTEGER) AS
 $$
-declare
+DECLARE
 
-begin
-    --return query select idplaylisty from playlisty p where not exists (select 1 from zawartosc z where z.idplaylisty = p.idplaylisty);
-    return query select idplaylisty from playlisty p where idplaylisty not in (select idplaylisty from zawartosc);
-end;
-$$ language plpgsql;
+BEGIN
+    --RETURN QUERY SELECT idplaylisty FROM playlisty p WHERE NOT EXISTS (SELECT 1 FROM zawartosc z WHERE z.idplaylisty = p.idplaylisty);
+    RETURN QUERY SELECT idplaylisty FROM playlisty p WHERE idplaylisty NOT IN (SELECT idplaylisty FROM zawartosc);
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from puste_playlisty();
+SELECT * FROM puste_playlisty();
 
 /*
 7.
@@ -189,17 +189,17 @@ wszystkie utwory(ich id i nazwę) na podanej playliście
 których czas trwania mieści się w zadanych granicach
 */
 
-create or replace function utwory_od_do(idplaylisty_ integer, czas_od integer, czas_do integer) returns table(r_idutworu integer, r_nazwa varchar(100)) as
+CREATE OR REPLACE FUNCTION utwory_od_do(idplaylisty_ INTEGER, czas_od INTEGER, czas_do INTEGER) RETURNS TABLE(r_idutworu INTEGER, r_nazwa VARCHAR(100)) AS
 $$ 
-declare
+DECLARE
 
-begin
-    return query select idutworu, nazwa from zawartosc natural join utwory where idplaylisty = idplaylisty_ and dlugosc between czas_od and czas_do;
-end;
-$$ language plpgsql;
+BEGIN
+    RETURN QUERY SELECT idutworu, nazwa FROM zawartosc NATURAL JOIN utwory WHERE idplaylisty = idplaylisty_ AND dlugosc between czas_od AND czas_do;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from utwory left join zawartosc using(idutworu) order by idplaylisty;
-select * from utwory_od_do(1, 65, 200);
+SELECT * FROM utwory LEFT JOIN zawartosc USING(idutworu) ORDER BY idplaylisty;
+SELECT * FROM utwory_od_do(1, 65, 200);
 /*
 zgadza sie
 1, utwor1
@@ -217,36 +217,36 @@ Funkcja zwraca wszystkie utwory(ich
 nazwy) na zaktualizowanej playliście, których długość jest
 co najmniej równa długości nowo dodanego utworu.
 */
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
-create temporary table utwory_tmp
-as select * from utwory;
+CREATE temporary TABLE utwory_tmp
+AS SELECT * FROM utwory;
 
-create or replace function dodaj_utwor(
-    idutworu_ integer,
-    nazwa_utworu_ varchar(50),
-    idalbumu_ integer,
-    dlugosc_ integer,
-    nazwa_playlisty_ varchar(30)
-) returns table(r_nazwy_utworow varchar(50)) as
+CREATE OR REPLACE FUNCTION dodaj_utwor(
+    idutworu_ INTEGER,
+    nazwa_utworu_ VARCHAR(50),
+    idalbumu_ INTEGER,
+    dlugosc_ INTEGER,
+    nazwa_playlisty_ VARCHAR(30)
+) RETURNS TABLE(r_nazwy_utworow VARCHAR(50)) AS
 $$
-declare
-    idplaylisty_ integer;
-begin
-    select idplaylisty into idplaylisty_ from playlisty where nazwa = nazwa_playlisty_;
-    insert into utwory_tmp(idutworu, nazwa, idalbumu, dlugosc) values(idutworu_, nazwa_utworu_, idalbumu_, dlugosc_);
-    insert into zawartosc_tmp(idutworu, idplaylisty) values(idplaylisty_, idutworu_);
+DECLARE
+    idplaylisty_ INTEGER;
+BEGIN
+    SELECT idplaylisty INTO idplaylisty_ FROM playlisty WHERE nazwa = nazwa_playlisty_;
+    INSERT INTO utwory_tmp(idutworu, nazwa, idalbumu, dlugosc) values(idutworu_, nazwa_utworu_, idalbumu_, dlugosc_);
+    INSERT INTO zawartosc_tmp(idutworu, idplaylisty) values(idplaylisty_, idutworu_);
 
-    return query select nazwa
-        from zawartosc_tmp natural join utwory_tmp u
-        where idplaylisty = idplaylisty_
-            and dlugosc >= (select dlugosc from utwory_tmp where idutworu = idutworu_);
+    RETURN QUERY SELECT nazwa
+        FROM zawartosc_tmp NATURAL JOIN utwory_tmp u
+        WHERE idplaylisty = idplaylisty_
+            AND dlugosc >= (SELECT dlugosc FROM utwory_tmp WHERE idutworu = idutworu_);
             -- ew dlugosc >= dlugosc_;
-end;
-$$ language plpgsql;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from dodaj_utwor(11, 'aaaaaa', 1, 90, 'MojaPlaylista1');
+SELECT * FROM dodaj_utwor(11, 'aaaaaa', 1, 90, 'MojaPlaylista1');
 
 
 /*
@@ -259,48 +259,48 @@ loginklienta_od i którzy dodatkowo urodzili się po tym jak
 klient_od się zarejestrował.
 */
 
-create or replace function klienci(loginklienta_od varchar(50)) returns table(r_id_klientow integer) as
+CREATE OR REPLACE FUNCTION klienci(loginklienta_od VARCHAR(50)) RETURNS TABLE(r_id_klientow INTEGER) AS
 $$
-declare
-    id_dawcy integer;
-begin
-    select idklienta into id_dawcy from klienci where login = loginklienta_od;
+DECLARE
+    id_dawcy INTEGER;
+BEGIN
+    SELECT idklienta INTO id_dawcy FROM klienci WHERE login = loginklienta_od;
 
-    return query select distinct idklienta from klienci
-        natural join playlisty
-        natural join zawartosc
-        where idutworu in (select idutworu from playlisty natural join zawartosc where idklienta = id_dawcy)
-        and data_urodzenia > (select data_urodzenia from klienci where idklienta = id_dawcy);
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT distinct idklienta FROM klienci
+        NATURAL JOIN playlisty
+        NATURAL JOIN zawartosc
+        WHERE idutworu IN (SELECT idutworu FROM playlisty NATURAL JOIN zawartosc WHERE idklienta = id_dawcy)
+        AND data_urodzenia > (SELECT data_urodzenia FROM klienci WHERE idklienta = id_dawcy);
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from klienci('user6');
+SELECT * FROM klienci('user6');
 
 /*
 10.
 Napisz funkcje start_od która przyjmuje prefiks i
 zwraca dane utworów (idutworu, idalbumu, nazwa,
 dlugosc), które się zaczynają od prefiksu
--- jesli po prostu maja zawirac, to zmienic na ~ prefiks
+-- jesli po prostu maja zawirac, TO zmienic na ~ prefiks
 */
-create or replace function start_od(prefiks varchar(100)) returns setof utwory as
+CREATE OR REPLACE FUNCTION start_od(prefiks VARCHAR(100)) RETURNS SETOF utwory AS
 $$
-declare
+DECLARE
 
-begin
-    return query select * from utwory where nazwa ~~ (prefiks || '%');
-end;
-$$ language plpgsql;
+BEGIN
+    RETURN QUERY SELECT * FROM utwory WHERE nazwa ~~ (prefiks || '%');
+END;
+$$ LANGUAGE PLPGSQL;
 
 /*
 Pomocnicze
-select * from utwory;
-select * from utwory where nazwa ~~ ('Polskie' || '%');
-select * from utwory where nazwa ~ 'or';
+SELECT * FROM utwory;
+SELECT * FROM utwory WHERE nazwa ~~ ('Polskie' || '%');
+SELECT * FROM utwory WHERE nazwa ~ 'OR';
 */
 
-select * from start_od('Polskie');
-select * from start_od('Utw');
+SELECT * FROM start_od('Polskie');
+SELECT * FROM start_od('Utw');
 
 /*
 11.
@@ -314,50 +314,50 @@ utwory na playliście_do po procesie kopiowania (idutworu,
 idalbumu, nazwa, dlugosc)
 */
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
-create or replace function kopiuj_avg(nazwaplaylisty_od varchar(30), nazwaplaylisty_do varchar(30)) returns setof utwory as
+CREATE OR REPLACE FUNCTION kopiuj_avg(nazwaplaylisty_od VARCHAR(30), nazwaplaylisty_do VARCHAR(30)) RETURNS SETOF utwory AS
 $$
-declare
-    id_playlisty_od integer;
-    id_playlisty_do integer;
-    sr_czas integer; -- ?? ma byc integer ? numeric(7,2) i w tedy bez rzutowania
-begin
-    select idplaylisty into id_playlisty_od from playlisty where nazwa = nazwaplaylisty_od;
-    select idplaylisty into id_playlisty_do from playlisty where nazwa = nazwaplaylisty_do;
-    select coalesce(avg(dlugosc)::integer, 0) into sr_czas from zawartosc_tmp natural join utwory where idplaylisty = id_playlisty_do;
+DECLARE
+    id_playlisty_od INTEGER;
+    id_playlisty_do INTEGER;
+    sr_czas INTEGER; -- ?? ma byc INTEGER ? NUMERIC(7,2) i w tedy bez rzutowania
+BEGIN
+    SELECT idplaylisty INTO id_playlisty_od FROM playlisty WHERE nazwa = nazwaplaylisty_od;
+    SELECT idplaylisty INTO id_playlisty_do FROM playlisty WHERE nazwa = nazwaplaylisty_do;
+    SELECT coalesce(AVG(dlugosc)::INTEGER, 0) INTO sr_czas FROM zawartosc_tmp NATURAL JOIN utwory WHERE idplaylisty = id_playlisty_do;
 
-    insert into zawartosc_tmp(idplaylisty, idutworu)
-    select id_playlisty_do, idutworu from utwory
-        where
-        dlugosc > sr_czas and
-        idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = id_playlisty_do); -- albo zamist tego: on conflict do nothing;
+    INSERT INTO zawartosc_tmp(idplaylisty, idutworu)
+    SELECT id_playlisty_do, idutworu FROM utwory
+        WHERE
+        dlugosc > sr_czas AND
+        idutworu NOT IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = id_playlisty_do); -- albo zamist tego: ON conflict do nothing;
     
-    return query select * from utwory where idutworu in (select idutworu from zawartosc_tmp where idplaylisty = id_playlisty_do);
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT * FROM utwory WHERE idutworu IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = id_playlisty_do);
+END;
+$$ LANGUAGE PLPGSQL;
 
 /*
 Pomocnicze
-select * from playlisty;
-select idplaylisty from playlisty where nazwa = 'ImprezaMix';
-select idplaylisty from playlisty where nazwa = 'ImprezaMix2';
-select avg(dlugosc), avg(dlugosc)::integer from zawartosc natural join utwory where idplaylisty = 7;
+SELECT * FROM playlisty;
+SELECT idplaylisty FROM playlisty WHERE nazwa = 'ImprezaMix';
+SELECT idplaylisty FROM playlisty WHERE nazwa = 'ImprezaMix2';
+SELECT AVG(dlugosc), AVG(dlugosc)::INTEGER FROM zawartosc NATURAL JOIN utwory WHERE idplaylisty = 7;
 */
 
-select * from kopiuj_avg('Wszystkieee', 'Pusta');
-select 'Tera tylko powyzej dlugosci 220';
-select * from kopiuj_avg('Wszystkieee', 'Jeden 220dlugosc');
+SELECT * FROM kopiuj_avg('Wszystkieee', 'Pusta');
+SELECT 'Tera tylko powyzej dlugosci 220';
+SELECT * FROM kopiuj_avg('Wszystkieee', 'Jeden 220dlugosc');
 
-select 'A teraz powyzej 150, bo 220+80/2 = 150, 80 jest bo juz byla';
-select * from kopiuj_avg('Wszystkieee', 'Dwa sr 150');
+SELECT 'A teraz powyzej 150, bo 220+80/2 = 150, 80 jest bo juz byla';
+SELECT * FROM kopiuj_avg('Wszystkieee', 'Dwa sr 150');
 
 /*
 12.
 Napisz funkcję kopiuj_zaczynajace_sie_od która
 przyjmuje 3 argumenty : idplaylisty_od,
-nazwaplaylisty_do, prefiks (varchar(10)). Funkcja kopiuje
+nazwaplaylisty_do, prefiks (VARCHAR(10)). Funkcja kopiuje
 wszystkie utowry, których nazwa zaczyna się od prefiks i
 które nie występują na playliście_do, z playlisty_od do
 playlisty_do.Funkcja zwraca wszystkie utwory na
@@ -365,40 +365,40 @@ playliście_do po procesie kopiowania (idutworu, idalbumu,
 nazwa, dlugosc)
 */
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
-create or replace function kopiuj_zaczynajace_sie_od(idplaylisty_od integer, nazwa_playlisty_do varchar(30), prefiks varchar(10)) returns setof utwory as
+CREATE OR REPLACE FUNCTION kopiuj_zaczynajace_sie_od(idplaylisty_od INTEGER, nazwa_playlisty_do VARCHAR(30), prefiks VARCHAR(10)) RETURNS SETOF utwory AS
 $$
-declare
-    idplaylisty_do integer;
-begin
-    select idplaylisty into idplaylisty_do from playlisty where nazwa = nazwa_playlisty_do;
+DECLARE
+    idplaylisty_do INTEGER;
+BEGIN
+    SELECT idplaylisty INTO idplaylisty_do FROM playlisty WHERE nazwa = nazwa_playlisty_do;
 
-    insert into zawartosc_tmp(idplaylisty, idutworu)
-    select idplaylisty_do, idutworu from utwory
-        where 
-            nazwa ~ ( '^' || prefiks) and -- ~~ (prefiks || '%') albo  ~ ( '^' || prefiks) ~ to jest normalny regrex natomiast ^ to kotwica poczatku
-            -- mozna by na except zamienic zamiast dwoch oddzielnych. lub on conflict do NOTHING; -- bo i tak musza byc unikatowe
-            idutworu in (select idutworu from zawartosc_tmp where idplaylisty = idplaylisty_od) and
-            idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = idplaylisty_do);
-    return query select * from utwory where idutworu in (select idutworu from zawartosc_tmp where idplaylisty = idplaylisty_do);
-end;
-$$ language plpgsql;
+    INSERT INTO zawartosc_tmp(idplaylisty, idutworu)
+    SELECT idplaylisty_do, idutworu FROM utwory
+        WHERE 
+            nazwa ~ ( '^' || prefiks) AND -- ~~ (prefiks || '%') albo  ~ ( '^' || prefiks) ~ TO jest normalny regrex natomiast ^ TO kotwica poczatku
+            -- mozna BY na EXCEPT zamienic zamiast dwoch oddzielnych. lub ON conflict do NOTHING; -- bo i tak musza byc unikatowe
+            idutworu IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = idplaylisty_od) AND
+            idutworu NOT IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = idplaylisty_do);
+    RETURN QUERY SELECT * FROM utwory WHERE idutworu IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = idplaylisty_do);
+END;
+$$ LANGUAGE PLPGSQL;
 
 /*
-select * from zawartosc z natural join playlisty p right join utwory using(idutworu); 
+SELECT * FROM zawartosc z NATURAL JOIN playlisty p RIGHT JOIN utwory USING(idutworu); 
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
-select 1, idutworu from utwory
-        where 
-            nazwa  ~ ( '^' || 'Polsk') and -- ~ ( '^' || prefiks) ~ to jest normalny regrex natomiast ^ to kotwica poczatku
-            -- mozna by na except zamienic zamiast dwoch oddzielnych. lub on conflict do NOTHING; -- bo i tak musza byc unikatowe
-            idutworu in (select idutworu from zawartosc_tmp where idplaylisty = 7) and
-            idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = 2);
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
+SELECT 1, idutworu FROM utwory
+        WHERE 
+            nazwa  ~ ( '^' || 'Polsk') AND -- ~ ( '^' || prefiks) ~ TO jest normalny regrex natomiast ^ TO kotwica poczatku
+            -- mozna BY na EXCEPT zamienic zamiast dwoch oddzielnych. lub ON conflict do NOTHING; -- bo i tak musza byc unikatowe
+            idutworu IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = 7) AND
+            idutworu NOT IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = 2);
 */
-select * from kopiuj_zaczynajace_sie_od(7, 'MojaPlaylista2', 'Polsk');
+SELECT * FROM kopiuj_zaczynajace_sie_od(7, 'MojaPlaylista2', 'Polsk');
 
 
 /*
@@ -409,7 +409,7 @@ login_klienta. Funkcja dodaje do każdej playlisty
 nazleżącej do klienta o loginie login_klienta utwory
 wytępujące na albumach wykonawcy nazwa_wykonawcy -
 o ile wcześniej nie znajdują się już na jego playliście.
-Album z którego pochodzą utwory musi być dodatkowo
+Album z którego pochodzą utwory musi BYć dodatkowo
 wydany przed datą rejestracji klienta. Funkcja zwraca
 idplaylist oraz wszystkie utwory na playlistach klienta po
 dodaniu do nich utworów (idutworu, idalbumu, nazwa,
@@ -417,50 +417,50 @@ dlugosc).
 */
 
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
-create or replace function dodaj_utwory_wykonawcy1(nazwa_wykonawcy_ varchar(100), login_klienta_ varchar(50)) 
-returns table(
-    r_idplaylisty integer,
-    r_idutworu_ integer,
-    r_idalbumu_ integer,
-    r_nazwa_utworu_ varchar(100),
-    r_dlugosc_ integer
-) as
+CREATE OR REPLACE FUNCTION dodaj_utwory_wykonawcy1(nazwa_wykonawcy_ VARCHAR(100), login_klienta_ VARCHAR(50)) 
+RETURNS TABLE(
+    r_idplaylisty INTEGER,
+    r_idutworu_ INTEGER,
+    r_idalbumu_ INTEGER,
+    r_nazwa_utworu_ VARCHAR(100),
+    r_dlugosc_ INTEGER
+) AS
 $$
-declare
-    id_playlisty_var integer;
-begin
-    for id_playlisty_var in select idplaylisty from playlisty where idklienta = (select idklienta from klienci where login = login_klienta_)
-    loop
-        insert into zawartosc_tmp(idplaylisty, idutworu)
-        select id_playlisty_var, idutworu from utwory join albumy using(idalbumu)
-            where
-            idwykonawcy = (select idwykonawcy from wykonawcy where nazwa = nazwa_wykonawcy_) and
-            idutworu not in (select idutworu from zawartosc_tmp where idplaylisty = id_playlisty_var) and
-            data_wydania < (select data_rejestracji from klienci where login = login_klienta_);
-    end loop;
+DECLARE
+    id_playlisty_var INTEGER;
+BEGIN
+    FOR id_playlisty_var IN SELECT idplaylisty FROM playlisty WHERE idklienta = (SELECT idklienta FROM klienci WHERE login = login_klienta_)
+    LOOP
+        INSERT INTO zawartosc_tmp(idplaylisty, idutworu)
+        SELECT id_playlisty_var, idutworu FROM utwory JOIN albumy USING(idalbumu)
+            WHERE
+            idwykonawcy = (SELECT idwykonawcy FROM wykonawcy WHERE nazwa = nazwa_wykonawcy_) AND
+            idutworu NOT IN (SELECT idutworu FROM zawartosc_tmp WHERE idplaylisty = id_playlisty_var) AND
+            data_wydania < (SELECT data_rejestracji FROM klienci WHERE login = login_klienta_);
+    END LOOP;
 
-    return query select idplaylisty, idutworu, idalbumu, nazwa, dlugosc from zawartosc_tmp natural join utwory;
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT idplaylisty, idutworu, idalbumu, nazwa, dlugosc FROM zawartosc_tmp NATURAL JOIN utwory;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from wykonawcy join albumy using(idwykonawcy);
-select * from klienci natural join playlisty;
+SELECT * FROM wykonawcy JOIN albumy USING(idwykonawcy);
+SELECT * FROM klienci NATURAL JOIN playlisty;
 -- (3, 'Album3', 'Hip-Hop', '2005-10-12'),
 -- album 3 wykonawca 3 
 -- na pewno nie sa na pustej.
 -- data wydania albumu jest 1910 rok, user 6 zarejstrowal sie 1990 roku wiec sie zgadza
--- update albumy set data_wydania = '1910-01-07' where idalbumu = 3;
-select 'przed funkcja: ';
-select idplaylisty, idutworu, idalbumu, u.nazwa dlugosc from playlisty natural join zawartosc
-    join utwory u using(idutworu) join albumy using(idalbumu)
-    order by idalbumu;
+-- UPDATE albumy set data_wydania = '1910-01-07' WHERE idalbumu = 3;
+SELECT 'przed funkcja: ';
+SELECT idplaylisty, idutworu, idalbumu, u.nazwa dlugosc FROM playlisty NATURAL JOIN zawartosc
+    JOIN utwory u USING(idutworu) JOIN albumy USING(idalbumu)
+    ORDER BY idalbumu;
 
-select 'po funkcji: ';
-select * from dodaj_utwory_wykonawcy1('Artysta3', 'user6')
-order by r_idalbumu_;
+SELECT 'po funkcji: ';
+SELECT * FROM dodaj_utwory_wykonawcy1('Artysta3', 'user6')
+ORDER BY r_idalbumu_;
 
 
 
@@ -470,8 +470,8 @@ order by r_idalbumu_;
 
 
 -- tu niby poprawna ???
-create temporary table zawartosc_tmp
-as select * from zawartosc;
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
 
 CREATE OR REPLACE FUNCTION dodaj_utwory_wykonawcy11(IN nazwa_wykonawcy
 VARCHAR(100), IN login_klienta VARCHAR(50))
@@ -513,65 +513,65 @@ JOIN zawartosc_tmp z USING(idutworu)
 JOIN playlisty p USING(idplaylisty)
 WHERE idklienta = id_k;
 END;
-$$ LANGUAGE PLpgSQL;
+$$ LANGUAGE PLPGSQL;
 
 
-select * from dodaj_utwory_wykonawcy11('Artysta3', 'user6')
-order by r_idalbumu;
-
-
-
+SELECT * FROM dodaj_utwory_wykonawcy11('Artysta3', 'user6')
+ORDER BY r_idalbumu;
 
 
 
-create temporary table zawartosc_tmp
-as select * from zawartosc;
 
-create or replace function func(
-	f_nazwa varchar(30),
-	f_login varchar(50)
+
+
+CREATE temporary TABLE zawartosc_tmp
+AS SELECT * FROM zawartosc;
+
+CREATE OR REPLACE FUNCTION func(
+	f_nazwa VARCHAR(30),
+	f_login VARCHAR(50)
 	)
-returns table(
-	t_idplaylisty integer,
-	t_idutworu integer,
-	t_idalbumu integer,
-	t_nazwa varchar(100),
-	t_dlugosc integer
-	) as
+RETURNS TABLE(
+	t_idplaylisty INTEGER,
+	t_idutworu INTEGER,
+	t_idalbumu INTEGER,
+	t_nazwa VARCHAR(100),
+	t_dlugosc INTEGER
+	) AS
 $$
-declare
-v_data date;
-v_utw record;
+DECLARE
+v_data DATE;
+v_utw RECORD;
 
-begin
-v_data := (select data_rejestracji from klienci where login = f_login);
+BEGIN
+v_data := (SELECT data_rejestracji FROM klienci WHERE login = f_login);
 
-for v_utw in(
-	select idutworu
-	from wykonawcy w
-	join albumy a using(idwykonawcy)
-	join utwory u using(idalbumu)
-	where w.nazwa = f_nazwa
-	and a.data_wydania < v_data
+FOR v_utw IN(
+	SELECT idutworu
+	FROM wykonawcy w
+	JOIN albumy a USING(idwykonawcy)
+	JOIN utwory u USING(idalbumu)
+	WHERE w.nazwa = f_nazwa
+	AND a.data_wydania < v_data
 	)
-loop
-insert into zawartosc_tmp
-select v_utw.idutworu, idplaylisty
-from playlisty
-where idklienta = (select idklienta from klienci where login = f_login)
-on conflict do nothing; --  (idutworu, idplaylisty)
-end loop;
+LOOP
+INSERT INTO zawartosc_tmp
+SELECT v_utw.idutworu, idplaylisty
+FROM playlisty
+WHERE idklienta = (SELECT idklienta FROM klienci WHERE login = f_login)
+ON conflict do nothing; --  (idutworu, idplaylisty)
+END LOOP;
 
-return query
-select idplaylisty, idutworu, idalbumu, u.nazwa, dlugosc
-from utwory u
-join zawartosc_tmp using(idutworu)
-join playlisty using(idplaylisty)
-where idklienta = (select idklienta from klienci where login = f_login);
-end;
+RETURN QUERY
+SELECT idplaylisty, idutworu, idalbumu, u.nazwa, dlugosc
+FROM utwory u
+JOIN zawartosc_tmp USING(idutworu)
+JOIN playlisty USING(idplaylisty)
+WHERE idklienta = (SELECT idklienta FROM klienci WHERE login = f_login);
+END;
 $$
-language plpgsql;
-select * from func('Artysta3', 'user6');
+LANGUAGE PLPGSQL;
+SELECT * FROM func('Artysta3', 'user6');
 
 
 
@@ -590,47 +590,47 @@ utworów (idutworu, idalbumu, nazwa, dlugosc).
 
 -- czy maja byc unikatowe nazwy ?? 
 
-create or replace function dodaj_utwory_wykonawcy2(
-    idwykonawcy_ integer,
-    idklienta_ integer,
-    prefiks varchar(10))
-returns setof utwory as
+CREATE OR REPLACE FUNCTION dodaj_utwory_wykonawcy2(
+    idwykonawcy_ INTEGER,
+    idklienta_ INTEGER,
+    prefiks VARCHAR(10))
+RETURNS SETOF utwory AS
 $$
-declare -- mozna tez zrobic petla na palylistach, to jest lepsze podejscie jesli jest wiecej playlist niz utworow.
--- bo to co jest w forze w selectcie to tylko raz wykonujemy, wiec lepiej dac tam najbardziej skkomplikowne operajce / zapytanie.
-    idutworu_var integer;
-begin
+DECLARE -- mozna tez zrobic petla na palylistach, TO jest lepsze podejscie jesli jest wiecej playlist niz utworow.
+-- bo TO co jest w forze w selectcie TO tylko raz wykonujemy, wiec lepiej dac tam najbardziej skkomplikowne operajce / zapytanie.
+    idutworu_var INTEGER;
+BEGIN
 
 -- kopia zapasowa:
-    create temporary table zawartosc_tmp
-    as select * from zawartosc;
+    CREATE temporary TABLE zawartosc_tmp
+    AS SELECT * FROM zawartosc;
 
-    for idutworu_var in select idutworu from utwory u join albumy using(idalbumu)
-        where 
-        u.nazwa ~('^' || prefiks) and
+    FOR idutworu_var IN SELECT idutworu FROM utwory u JOIN albumy USING(idalbumu)
+        WHERE 
+        u.nazwa ~('^' || prefiks) AND
         idwykonawcy = idwykonawcy_
-    loop -- dla kazdego utworu dodajemy go do playlisty, uzywamy on
-        insert into zawartosc(idplaylisty, idutworu)
-        select idplaylisty, idutworu_var from playlisty
-            where idklienta = idklienta_
-            -- ewentualnie zamiast tego, trzeba by robic joina z zawartoscia i tam sprawdzac tylu (p byloby aliasem dla playlisty)
-            -- and idutworu_var not in (select idutworu from zawartosc z where z.idplaylisty = p.idklaylisty)
-            on conflict do NOTHING;
-    end loop;
+    LOOP -- dla kazdego utworu dodajemy go do playlisty, uzywamy ON
+        INSERT INTO zawartosc(idplaylisty, idutworu)
+        SELECT idplaylisty, idutworu_var FROM playlisty
+            WHERE idklienta = idklienta_
+            -- ewentualnie zamiast tego, trzeba BY robic joina z zawartoscia i tam sprawdzac tylu (p byloby aliasem dla playlisty)
+            -- AND idutworu_var NOT IN (SELECT idutworu FROM zawartosc z WHERE z.idplaylisty = p.idklaylisty)
+            ON conflict do NOTHING;
+    END LOOP;
 
 -- distinct czy maja byc unikatowe nazwy ??
-    -- return query select distinct u.idutworu, u.idalbumu, u.nazwa, u.dlugosc -- TAK
-    return query select u.idutworu, u.idalbumu, u.nazwa, u.dlugosc -- NIE
-    from utwory u natural join zawartosc join playlisty using(idplaylisty)
-    where idklienta = idklienta_; 
+    -- RETURN QUERY SELECT distinct u.idutworu, u.idalbumu, u.nazwa, u.dlugosc -- TAK
+    RETURN QUERY SELECT u.idutworu, u.idalbumu, u.nazwa, u.dlugosc -- NIE
+    FROM utwory u NATURAL JOIN zawartosc JOIN playlisty USING(idplaylisty)
+    WHERE idklienta = idklienta_; 
 
 -- sprzatanie:
-    delete from zawartosc;
-    insert into zawartosc select * from zawartosc_tmp;
-end;
-$$ language plpgsql;
+    DELETE FROM zawartosc;
+    INSERT INTO zawartosc SELECT * FROM zawartosc_tmp;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from dodaj_utwory_wykonawcy2(3, 6, 'Polskie');
+SELECT * FROM dodaj_utwory_wykonawcy2(3, 6, 'Polskie');
 
 /*
 14.
@@ -640,39 +640,39 @@ się na playliście które pochodzą z albumów wydanych w
 danym kraju
 */ 
 
-create or replace function liczba_z_kraju(idplaylisty_ integer, kraj_ varchar(30), out liczba_utworow integer) as
+CREATE OR REPLACE FUNCTION liczba_z_kraju(idplaylisty_ INTEGER, kraj_ VARCHAR(30), OUT liczba_utworow INTEGER) AS
 $$
-declare
+DECLARE
 
-begin
-    select count(*) into liczba_utworow from zawartosc
-        natural join utwory
-        join albumy using(idalbumu)
-        join wykonawcy using(idwykonawcy)
-        where
-            idplaylisty = idplaylisty_ and
+BEGIN
+    SELECT COUNT(*) INTO liczba_utworow FROM zawartosc
+        NATURAL JOIN utwory
+        JOIN albumy USING(idalbumu)
+        JOIN wykonawcy USING(idwykonawcy)
+        WHERE
+            idplaylisty = idplaylisty_ AND
             kraj = kraj_;
-end;
-$$ language plpgsql;
+END;
+$$ LANGUAGE PLPGSQL;
 
 -- cala zawartosc playlisty
-select * from wykonawcy
-    join albumy using(idwykonawcy)
-    join utwory using(idalbumu)
-    join zawartosc using(idutworu)
-    where idplaylisty = 7;
+SELECT * FROM wykonawcy
+    JOIN albumy USING(idwykonawcy)
+    JOIN utwory USING(idalbumu)
+    JOIN zawartosc USING(idutworu)
+    WHERE idplaylisty = 7;
 
 -- idplaylisty bedzie taki sam ale tak orientacyjnie aby wiedziec,
--- tu i tak to na sztywno ustawiamy
-select idplaylisty, kraj, count(*) as ilosc_utworow from wykonawcy
-    join albumy using(idwykonawcy)
-    join utwory using(idalbumu)
-    join zawartosc using(idutworu)
-    where idplaylisty = 7
-    group by kraj, idplaylisty
-    order by ilosc_utworow desc;
+-- tu i tak TO na sztywno ustawiamy
+SELECT idplaylisty, kraj, COUNT(*) AS ilosc_utworow FROM wykonawcy
+    JOIN albumy USING(idwykonawcy)
+    JOIN utwory USING(idalbumu)
+    JOIN zawartosc USING(idutworu)
+    WHERE idplaylisty = 7
+    GROUP BY kraj, idplaylisty
+    ORDER BY ilosc_utworow DESC;
 
-select liczba_z_kraju(7, 'Polska');
+SELECT liczba_z_kraju(7, 'Polska');
 
 
 /*
@@ -680,11 +680,11 @@ select liczba_z_kraju(7, 'Polska');
 Napisz funkcje
 polub_utwory_wykonawcy która przyjmuje
 3 argumenty: loginklienta, idwykonawcy,
-polub(boolean). Funkcja dodaje polubienia
+polub(BOOLEAN). Funkcja dodaje polubienia
 do wszystkich utworów znajdujących się na
 wszystkich playlistach klienta o loginie
 loginklienta (jeśli wartość polub jest
-ustawiona na True), ktore należą do
+ustawiona na TRUE), ktore należą do
 albumów wykonawcy o id = idwykonawcy i
 nie zostały wcześniej polubione przez
 klienta. Funkcja zwraca wszystkie
@@ -693,90 +693,90 @@ operacji polubienia utworów wykonawców)
 (idplaylisty, idutworu, idklienta, lubi)
 
 
--- czyli mialy wartosc false lub null. 
--- jesli byloby polub = false, no to w tedy wszystkie bysmy ustawili na false
--- polubione, czyli jesli byly na lubi=false, to rowniez sie do tego zalicza.
--- wszystko co nie jest lubi=true to sie zalicza do tego.
+-- czyli mialy wartosc FALSE lub NULL. 
+-- jesli byloby polub = FALSE, no TO w tedy wszystkie bysmy ustawili na FALSE
+-- polubione, czyli jesli byly na lubi=FALSE, TO rowniez sie do tego zalicza.
+-- wszystko co nie jest lubi=TRUE TO sie zalicza do tego.
 
 i nie zostały wcześniej polubione przez
 klienta.
 */
 
-begin;
+BEGIN;
 
-create or replace function polub_utwory_wykonawcy(loginklienta_ varchar(50), idwykonawcy_ integer, polub boolean)
-returns table(
-    r_idplaylisty integer,
-    r_idutworu integer,
-    r_idklienta integer,
-    r_lubi boolean
-) as
+CREATE OR REPLACE FUNCTION polub_utwory_wykonawcy(loginklienta_ VARCHAR(50), idwykonawcy_ INTEGER, polub BOOLEAN)
+RETURNS TABLE(
+    r_idplaylisty INTEGER,
+    r_idutworu INTEGER,
+    r_idklienta INTEGER,
+    r_lubi BOOLEAN
+) AS
 $$
-declare
-    idklienta_ integer;
-begin
+DECLARE
+    idklienta_ INTEGER;
+BEGIN
 
 -- dodanie kopi zapasowej
-    create temporary table oceny_tmp
-    as select * from oceny;
+    CREATE temporary TABLE oceny_tmp
+    AS SELECT * FROM oceny;
 
-    select idklienta into idklienta_ from klienci where login = loginklienta_;
+    SELECT idklienta INTO idklienta_ FROM klienci WHERE login = loginklienta_;
 
     -- distinct na idutworu, bo moze byc w wielu playlistach, ale 
-    -- i tak dla kazdego tylko jeden raz musimy to wykonac, inne sa const
+    -- i tak dla kazdego tylko jeden raz musimy TO wykonac, inne sa const
     
-    -- tutaj np moglem zrobic join albumy
+    -- tutaj np moglem zrobic JOIN albumy
     -- i dac sam waurnek ale co jest bardziej wydane?
 
     -- optymalizacja czy bardziej sie oplaca rozbic na dwa:
     -- modyfikacja niepolubionych na polubione  
     -- oraz dodanie zypelnie nowych, - wymaga sprawdzenia tych ktorych nie ma, ewentualnie 
-    -- ewentualnie "zapisanie" danych ktore sa wyrzucane z except, bo w tedy to moze byloby szybsze.
+    -- ewentualnie "zapisanie" danych ktore sa wyrzucane z EXCEPT, bo w tedy TO moze byloby szybsze.
 
     -- czy takie podejscie jak ja zrobilem
-    insert into oceny 
-    select distinct(idutworu), idklienta_, polub from playlisty
-        natural join zawartosc
-        join utwory using(idutworu)
-        -- join albumy using(idalbumu) --   ALTERNATYWA
-        where
-            idklienta = idklienta_ and
+    INSERT INTO oceny 
+    SELECT distinct(idutworu), idklienta_, polub FROM playlisty
+        NATURAL JOIN zawartosc
+        JOIN utwory USING(idutworu)
+        -- JOIN albumy USING(idalbumu) --   ALTERNATYWA
+        WHERE
+            idklienta = idklienta_ AND
         -- idwykonawcy = idwykonawcy_ --    ALTERNATYWA
-            idalbumu in (select idalbumu from albumy
-                where idwykonawcy = idwykonawcy_) -- zamiast tego
-    on conflict(idutworu, idklienta) do update set lubi = polub; -- ta co ma byc wstawiane: EXCLUDED.lubi
+            idalbumu IN (SELECT idalbumu FROM albumy
+                WHERE idwykonawcy = idwykonawcy_) -- zamiast tego
+    ON conflict(idutworu, idklienta) do UPDATE set lubi = polub; -- ta co ma byc wstawiane: EXCLUDED.lubi
 -- dajemy ktore kolumny sa odpwoeidzalne za konflikt
 
-    return query select idplaylisty, idutworu, idklienta, lubi from klienci
-        natural join oceny
-        natural join playlisty
-        where idklienta = idklienta_;
+    RETURN QUERY SELECT idplaylisty, idutworu, idklienta, lubi FROM klienci
+        NATURAL JOIN oceny
+        NATURAL JOIN playlisty
+        WHERE idklienta = idklienta_;
 
     
 -- sprzatanie:
-    delete from oceny;
-    insert into oceny select * from oceny_tmp;
+    DELETE FROM oceny;
+    INSERT INTO oceny SELECT * FROM oceny_tmp;
 
-end;
-$$ language plpgsql;
+END;
+$$ LANGUAGE PLPGSQL;
 
 /*
-select * from oceny natural join utwory where idklienta = 1;
-select * from albumy where idalbumu = 1;
+SELECT * FROM oceny NATURAL JOIN utwory WHERE idklienta = 1;
+SELECT * FROM albumy WHERE idalbumu = 1;
 */
 
-select * from oceny natural join utwory where idklienta = 1;
-select * from polub_utwory_wykonawcy('user1', 1, true);
+SELECT * FROM oceny NATURAL JOIN utwory WHERE idklienta = 1;
+SELECT * FROM polub_utwory_wykonawcy('user1', 1, TRUE);
 
 -- do testu aby sprawdzic, czy nie ma zdublowanych wartosci,
 -- chcąc sprawdzić, trzeba usunac z funkji "sprzątanie" 
 -- ale tu nizej trzeba odkomendowac.
 
--- select * from oceny where idklienta = 1;
--- delete from oceny;
--- insert into oceny select * from oceny_tmp;
+-- SELECT * FROM oceny WHERE idklienta = 1;
+-- DELETE FROM oceny;
+-- INSERT INTO oceny SELECT * FROM oceny_tmp;
 
-select * from oceny natural join utwory where idklienta = 1;
+SELECT * FROM oceny NATURAL JOIN utwory WHERE idklienta = 1;
 
 rollback;
 

@@ -1,62 +1,68 @@
-drop table zawartosc;
-drop table artykuly;
-drop table zamowienia;
-drop table klienci;
-drop table pudelka;
-drop table czekoladki;
+BEGIN;
 
-begin;
+DROP SCHEMA IF EXISTS cukiernia CASCADE;
+CREATE SCHEMA cukiernia;
 
-create table czekoladki (
-  idczekoladki char(3) primary key,
-  nazwa        varchar(30) not null,
-  czekolada    varchar(15),
-  orzechy      varchar(15),
-  nadzienie    varchar(15),
-  opis         varchar(100) not null,
-  koszt        numeric(7,2) not null,
-  masa         integer not null
+SET search_path TO cukiernia;
+SET CONSTRAINTS ALL DEFERRED;
+
+DROP TABLE IF EXISTS zawartosc;
+DROP TABLE IF EXISTS artykuly;
+DROP TABLE IF EXISTS zamowienia;
+DROP TABLE IF EXISTS klienci;
+DROP TABLE IF EXISTS pudelka;
+DROP TABLE IF EXISTS czekoladki;
+
+CREATE TABLE czekoladki (
+  idczekoladki CHAR(3) PRIMARY KEY,
+  nazwa        VARCHAR(30) NOT NULL,
+  czekolada    VARCHAR(15),
+  orzechy      VARCHAR(15),
+  nadzienie    VARCHAR(15),
+  opis         VARCHAR(100) NOT NULL,
+  koszt        NUMERIC(7,2) NOT NULL,
+  masa         INTEGER NOT NULL
 );
 
-create table pudelka (
-  idpudelka char(4) primary key,
-  nazwa     varchar(40) not null,
-  opis      varchar(150),
-  cena      numeric(7,2) not null,
-  stan      integer not null
+CREATE TABLE pudelka (
+  idpudelka CHAR(4) PRIMARY KEY,
+  nazwa     VARCHAR(40) NOT NULL,
+  opis      VARCHAR(150),
+  cena      NUMERIC(7,2) NOT NULL,
+  stan      INTEGER NOT NULL
 );
 
-create table zawartosc (
-  idpudelka    char(4) not null references pudelka,
-  idczekoladki char(3) not null references czekoladki,
-  sztuk        integer not null,
-  primary key (idpudelka, idczekoladki)
+CREATE TABLE zawartosc (
+  idpudelka    CHAR(4) NOT NULL REFERENCES pudelka,
+  idczekoladki CHAR(3) NOT NULL REFERENCES czekoladki,
+  sztuk        INTEGER NOT NULL,
+  PRIMARY KEY (idpudelka, idczekoladki)
 );
 
-create table klienci (
-  idklienta   integer primary key,
-  nazwa       varchar(130) not null,
-  ulica       varchar(30) not null,
-  miejscowosc varchar(15) not null,
-  kod         char(6) not null,
-  telefon     varchar(20) not null
+CREATE TABLE klienci (
+  idklienta   INTEGER PRIMARY KEY,
+  nazwa       VARCHAR(130) NOT NULL,
+  ulica       VARCHAR(30) NOT NULL,
+  miejscowosc VARCHAR(15) NOT NULL,
+  kod         CHAR(6) NOT NULL,
+  telefon     VARCHAR(20) NOT NULL
 );
 
-create table zamowienia (
-  idzamowienia   integer primary key,
-  idklienta      integer not null references klienci,
-  datarealizacji date not null
+CREATE TABLE zamowienia (
+  idzamowienia   INTEGER PRIMARY KEY,
+  idklienta      INTEGER NOT NULL REFERENCES klienci,
+  datarealizacji DATE NOT NULL
 );
 
-create table artykuly (
-  idzamowienia integer not null references zamowienia,
-  idpudelka    char(4) not null references pudelka,
-  sztuk        integer not null,
-  primary key (idzamowienia, idpudelka)
+CREATE TABLE artykuly (
+  idzamowienia INTEGER NOT NULL REFERENCES zamowienia,
+  idpudelka    CHAR(4) NOT NULL REFERENCES pudelka,
+  sztuk        INTEGER NOT NULL,
+  PRIMARY KEY (idzamowienia, idpudelka)
 );
 
 
-copy klienci from stdin with (null '', delimiter '|');
+copy klienci FROM stdin with (NULL '', delimiter '|');
 1|Hłasko Regina|Edwarda Bera 5|Elbląg|91-001|111 222 111
 2|Pikowski Stefan|Wolna 3|Kraków|92-111|012 111 11 11
 3|Czarnkowska Dalia|Wolska 89|Iława|11-373|111 222 001
@@ -127,7 +133,7 @@ copy klienci from stdin with (null '', delimiter '|');
 \.
 
 
-copy zamowienia from stdin with (null '', delimiter '|');
+copy zamowienia FROM stdin with (NULL '', delimiter '|');
 1|2|2013-10-30
 3|57|2013-10-30
 4|58|2013-10-31
@@ -275,7 +281,7 @@ copy zamowienia from stdin with (null '', delimiter '|');
 149|55|2013-12-20
 \.
 
-copy czekoladki from stdin with (null '', delimiter '|');
+copy czekoladki FROM stdin with (NULL '', delimiter '|');
 b01|Płomienna ekstaza|gorzka|łuskane|krem|Orzechy w kremie, zatopione w gorzkiej czekoladzie.|0.30|20
 b02|Gorzka jagodowa|gorzka||jagody|Smakowite górskie jagody w czekoladzie.|0.25|25
 b03|Marcepanowe listki|gorzka||marcepan|Marcepany w kształcie liści dębu oblewane gorzką czekoladą.|0.40|12
@@ -319,7 +325,7 @@ w03|Zlamane serce|biała|pekan||Dwie połówki pekanowego serca z białej czekol
 w06|Smak Brazylii|biała|brazylijskie||Brazylijskie orzechy, ręcznie umieszczane w białej czekoladzie.|0.28|35
 \.
 
-copy pudelka from stdin with (null '', delimiter '|');
+copy pudelka FROM stdin with (NULL '', delimiter '|');
 alls|Pory roku|Jagody, truskawki i maliny, wszystkie słodziutkie i smaczne.|14.00|700
 alpi|Kolekcja alpejska|Alpejskie jagody i maliny w naszej najlepszej czekoladzie.|20.00|400
 autu|Kolekcja jesienna|Rodzinne pudełko czekoladek, na jesienne wieczory.|43.00|200
@@ -340,7 +346,7 @@ swe2|Słodkie kremowe|Smakowite kremy dla wszystkich którzy uwielbiają nadzien
 swee|Mieszanka czekoladowa|Nasza najlepsza mieszanka owoców w czekoladzie.|27.00|300
 \.
 
-copy artykuly from stdin with (null '', delimiter '|');
+copy artykuly FROM stdin with (NULL '', delimiter '|');
 1|pean|2
 3|alpi|1
 3|love|2
@@ -823,7 +829,7 @@ copy artykuly from stdin with (null '', delimiter '|');
 149|swe2|1
 \.
 
-copy zawartosc from stdin with (null '', delimiter '|');
+copy zawartosc FROM stdin with (NULL '', delimiter '|');
 alls|b02|2
 alls|b04|2
 alls|b05|2

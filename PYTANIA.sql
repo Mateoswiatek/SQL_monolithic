@@ -4,11 +4,11 @@
 Napisz funkcje
 polub_utwory_wykonawcy która przyjmuje
 3 argumenty: loginklienta, idwykonawcy,
-polub(boolean). Funkcja dodaje polubienia
+polub(BOOLEAN). Funkcja dodaje polubienia
 do wszystkich utworów znajdujących się na
 wszystkich playlistach klienta o loginie
 loginklienta (jeśli wartość polub jest
-ustawiona na True), ktore należą do
+ustawiona na TRUE), ktore należą do
 albumów wykonawcy o id = idwykonawcy i
 nie zostały wcześniej polubione przez
 klienta. Funkcja zwraca wszystkie
@@ -17,60 +17,60 @@ operacji polubienia utworów wykonawców)
 (idplaylisty, idutworu, idklienta, lubi)
 
 
--- czyli mialy wartosc false lub null. 
--- jesli byloby polub = false, no to w tedy wszystkie bysmy ustawili na false
--- polubione, czyli jesli byly na lubi=false, to rowniez sie do tego zalicza.
--- wszystko co nie jest lubi=true to sie zalicza do tego.
+-- czyli mialy wartosc FALSE lub NULL. 
+-- jesli byloby polub = FALSE, no TO w tedy wszystkie bysmy ustawili na FALSE
+-- polubione, czyli jesli byly na lubi=FALSE, TO rowniez sie do tego zalicza.
+-- wszystko co nie jest lubi=TRUE TO sie zalicza do tego.
 
 i nie zostały wcześniej polubione przez
 klienta.
 */
 
-begin;
+BEGIN;
 
-create or replace function polub_utwory_wykonawcy(loginklienta_ varchar(50), idwykonawcy_ integer, polub boolean)
-returns table(
-    r_idplaylisty integer,
-    r_idutworu integer,
-    r_idklienta integer,
-    r_lubi boolean
-) as
+CREATE OR REPLACE FUNCTION polub_utwory_wykonawcy(loginklienta_ VARCHAR(50), idwykonawcy_ INTEGER, polub BOOLEAN)
+RETURNS TABLE(
+    r_idplaylisty INTEGER,
+    r_idutworu INTEGER,
+    r_idklienta INTEGER,
+    r_lubi BOOLEAN
+) AS
 $$
-declare
-    idklienta_ integer;
-begin
-    select idklienta into idklienta_ from klienci where login = loginklienta_;
+DECLARE
+    idklienta_ INTEGER;
+BEGIN
+    SELECT idklienta INTO idklienta_ FROM klienci WHERE login = loginklienta_;
 
     -- distinct na idutworu, bo moze byc w wielu playlistach, ale 
-    -- i tak dla kazdego tylko jeden raz musimy to wykonac, inne sa const
+    -- i tak dla kazdego tylko jeden raz musimy TO wykonac, inne sa const
     
-    -- tutaj np moglem zrobic join albumy
+    -- tutaj np moglem zrobic JOIN albumy
     -- i dac sam waurnek ale co jest bardziej wydane?
 
     -- optymalizacja czy bardziej sie oplaca rozbic na dwa:
     -- modyfikacja niepolubionych na polubione  
     -- oraz dodanie zypelnie nowych, - wymaga sprawdzenia tych ktorych nie ma, ewentualnie 
-    -- ewentualnie "zapisanie" danych ktore sa wyrzucane z except, bo w tedy to moze byloby szybsze.
+    -- ewentualnie "zapisanie" danych ktore sa wyrzucane z EXCEPT, bo w tedy TO moze byloby szybsze.
 
     -- czy takie podejscie jak ja zrobilem
-    insert into oceny 
-    select distinct(idutworu), idklienta_, polub from playlisty
-        natural join zawartosc
-        join utwory using(idutworu)
-        -- join albumy using(idalbumu) --   ALTERNATYWA
-        where
-            idklienta = idklienta_ and
+    INSERT INTO oceny 
+    SELECT distinct(idutworu), idklienta_, polub FROM playlisty
+        NATURAL JOIN zawartosc
+        JOIN utwory USING(idutworu)
+        -- JOIN albumy USING(idalbumu) --   ALTERNATYWA
+        WHERE
+            idklienta = idklienta_ AND
         -- idwykonawcy = idwykonawcy_ --    ALTERNATYWA
-            idalbumu in (select idalbumu from albumy
-                where idwykonawcy = idwykonawcy_) -- zamiast tego
-    on conflict(idutworu, idklienta) do update set lubi = polub; -- ta co ma byc wstawiane: EXCLUDED.lubi
+            idalbumu IN (SELECT idalbumu FROM albumy
+                WHERE idwykonawcy = idwykonawcy_) -- zamiast tego
+    ON conflict(idutworu, idklienta) do UPDATE set lubi = polub; -- ta co ma byc wstawiane: EXCLUDED.lubi
 
-    return query select idplaylisty, idutworu, idklienta, lubi from klienci
-        natural join oceny
-        natural join playlisty
-        where idklienta = idklienta_;
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT idplaylisty, idutworu, idklienta, lubi FROM klienci
+        NATURAL JOIN oceny
+        NATURAL JOIN playlisty
+        WHERE idklienta = idklienta_;
+END;
+$$ LANGUAGE PLPGSQL;
 
 
 

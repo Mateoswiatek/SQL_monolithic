@@ -1,5 +1,5 @@
 -- Napisz zapytanie SQL które wyświetla idwykonawcy którego utwory lubi użytkownik jim. Usuń duplikaty
--- Write an SQL query that displays the artist ID of whose songs user jim likes. Remove duplicates
+-- Write an SQL QUERY that displays the artist ID of whose songs user jim likes. Remove duplicates
 SELECT DISTINCT idwykonawcy
     FROM klienci nautral
     JOIN oceny
@@ -11,8 +11,8 @@ SELECT DISTINCT idwykonawcy
 
 
 -- Napisz zapytanie SQL które wyswietla nazwę utworu i ile razy dany utwor zostal polubiony(Jest TRUE w "lubi" ) i posortuje wedlug wartosci polubien malejaco 
--- Write an SQL query that displays the name of the song AND how many times the song has been liked (It is TRUE in "likes") AND sort BY the value of likes in descending ORDER
-SELECT nazwa, count(lubi) AS suma
+-- Write an SQL QUERY that displays the name of the song AND how many times the song has been liked (It IS TRUE IN "likes") AND sort BY the value of likes IN descending ORDER
+SELECT nazwa, COUNT(lubi) AS suma
     FROM utwory
     LEFT JOIN oceny USING(idutworu)
     WHERE lubi = TRUE
@@ -21,7 +21,7 @@ SELECT nazwa, count(lubi) AS suma
 
 -- OR
 
-SELECT nazwa, coalesce(sum(lubi::int), 0) AS suma
+SELECT nazwa, coalesce(SUM(lubi::INT), 0) AS suma
     FROM utwory
     LEFT JOIN oceny USING(idutworu)
     GROUP BY idutworu
@@ -29,15 +29,15 @@ SELECT nazwa, coalesce(sum(lubi::int), 0) AS suma
 
 
 -- Napisz zapytanie SQL, które wyświetla nazwy wykonawców którzy mają albumy z ostatnich 2 lat. usuń duplikaty
--- Write an SQL query that displays the names of artists who have albums FROM the last 2 years. remove duplicates
+-- Write an SQL QUERY that displays the names of artists who have albums FROM the last 2 years. remove duplicates
 SELECT DISTINCT w.nazwa
     FROM wykonawcy w
     JOIN albumy USING(idwykonawcy)
-    WHERE data_wydania > current_date - interval '2 years';
+    WHERE data_wydania > current_date - INTERVAL '2 years';
 
 
 -- Napisz zapytanie SQL, które wyświetla loginy klientów, którzy mają w playlistach utwory o dlugosci mniejszej niż 300 i z albumów nie starszych niż 2 lata. 
--- Write an SQL query that displays the logins of customers who have songs in their playlists that are less than 300 long AND FROM albums that are less than 2 years old.
+-- Write an SQL QUERY that displays the logins of customers who have songs IN their playlists that are less than 300 long AND FROM albums that are less than 2 years OLD.
 SELECT DISTINCT login
     FROM klienci
     JOIN playlisty  USING(idklienta)
@@ -46,12 +46,12 @@ SELECT DISTINCT login
     JOIN albumy     USING(idalbumu)
     WHERE
         dlugosc < 300
-        data_wydania > current_date - interval '2 years';
+        data_wydania > current_date - INTERVAL '2 years';
 
 
 -- Napisz zapytanie SQL które policzy wszystkie utwory z playlist użytkowników. Ma wyświetlać login klienta i liczę utworów zapisanych w playlistach.
--- Write an SQL query that will count all songs FROM users' playlists. It is supposed to display the client's login AND the number of songs saved in playlists.
-SELECT login, count(DISTINCT idutworu)
+-- Write an SQL QUERY that will COUNT all songs FROM users' playlists. It IS supposed TO display the client's login AND the number of songs saved IN playlists.
+SELECT login, COUNT(DISTINCT idutworu)
     FROM klienci
     LEFT JOIN playlisty USING(idklienta)
     JOIN zawartosc      USING(idplaylisty)
@@ -59,9 +59,9 @@ SELECT login, count(DISTINCT idutworu)
     ORDER BY login;
 
 
---Napisz zapytanie które wyswietli nazwe wykonawcow i ile polubien oni zdobyli, jak wykonawca nie zdobyl polubień to wtedy 0.
---Write a query that will display the name of the artists AND how many likes they got, if the artist did not get any likes, then 0.
-SELECT w.nazwa, coalesce(sum(lubi::int), 0)
+--Napisz zapytanie które wyswietli nazwe wykonawcow i ile polubien oni zdobyli, jak wykonawca nie zdobyl polubień TO wtedy 0.
+--Write a QUERY that will display the name of the artists AND how many likes they got, IF the artist did NOT get ANY likes, THEN 0.
+SELECT w.nazwa, coalesce(SUM(lubi::INT), 0)
     FROM oceny
     NATURAL JOIN utwory
     JOIN albumy      USING (idalbumu)
@@ -69,24 +69,24 @@ SELECT w.nazwa, coalesce(sum(lubi::int), 0)
     GROUP BY w.nazwa; 
 
 
--- Napisz zapytanie które wstawi klienta o loginie poprzedniego klienta o najwyższym id z dopiskiem "ALT", ma mieć id większe o 1, tą samą datę urodzenia i dzisiejszą date rejestracji.
--- Write a query that will INSERT a client with the login of the previous client with the highest id with the note "ALT",
--- it should have an id greater than 1, the same date of birth AND today's registration date.
+-- Napisz zapytanie które wstawi klienta o loginie poprzedniego klienta o najwyższym id z dopiskiem "ALT", ma mieć id większe o 1, tą samą datę urodzenia i dzisiejszą DATE rejestracji.
+-- Write a QUERY that will INSERT a client with the login of the previous client with the highest id with the note "ALT",
+-- it should have an id greater than 1, the same DATE of birth AND today's registration DATE.
 INSERT INTO klienci
     SELECT idklienta + 1, login || 'ALT', current_date, data_urodzenia
     FROM klienci
-    WHERE idklienta = (SELECT max(idklienta) FROM klienci);
+    WHERE idklienta = (SELECT MAX(idklienta) FROM klienci);
 
 
 -- Wyświetl wszystkie utwory o długości powyżej średniej długości utworów w bazie.
--- Display all songs with a length above the average length of songs in the database.
+-- Display all songs with a length above the average length of songs IN the database.
 SELECT *
     FROM kolokwium1.utwory
     WHERE dlugosc > (SELECT AVG(dlugosc) FROM kolokwium1.utwory);
 
 
 -- Znajdź najdłuższy utwór w bazie danych.
--- Find the longest song in the database.
+-- Find the longest song IN the database.
 SELECT *
     FROM kolokwium1.utwory
     WHERE dlugosc = (SELECT MAX(dlugosc) FROM kolokwium1.utwory);
@@ -97,14 +97,14 @@ SELECT *
 
 
 -- Wybierz wszystkie utwory / ocenione przez danego klienta jako "lubię". O podanym id oraz ogólnie (tutaj tylko liczbę), każdy numer id i liczba polubionych utworów.
--- Select all songs / rated BY a given customer AS "likes". About the given id AND in general (here only the number), each id number AND the number of liked songs.
+-- SELECT all songs / rated BY a given customer AS "likes". About the given id AND IN general (here only the number), each id number AND the number of liked songs.
 SELECT *
     FROM kolokwium1.oceny
     WHERE
         idklienta = 3
         AND lubi = TRUE;
 -- OR
-SELECT idklienta, count(idutworu)
+SELECT idklienta, COUNT(idutworu)
     FROM oceny
     WHERE lubi = TRUE
     GROUP BY idklienta;
@@ -122,24 +122,24 @@ SELECT *
 
 
 -- Policz, ile utworów znajduje się w każdym albumie
--- Count how many songs are in each album
-SELECT idalbumu, count(idutworu)
+-- COUNT how many songs are IN each album
+SELECT idalbumu, COUNT(idutworu)
     FROM albumy jon utwory USING(idalbumu)
     GROUP BY idalbumu;
 
 
--- Policz, ile utworów znajduje się w każdej playliście. (bo może być playlista bez zawartości, dlatego jest LEFT JOIN)
--- Count how many songs are in each playlist. (because there can be a playlist without content, that's why it's LEFT JOIN)
-SELECT idplaylisty, count(*) AS liczba_utworow
+-- Policz, ile utworów znajduje się w każdej playliście. (bo może BYć playlista bez zawartości, dlatego jest LEFT JOIN)
+-- COUNT how many songs are IN each playlist. (because there can be a playlist without content, that's why it's LEFT JOIN)
+SELECT idplaylisty, COUNT(*) AS liczba_utworow
     FROM playlisty
     LEFT JOIN zawartosc
     GROUP BY idplaylisty;
 
 
 -- Znajdź klientów, którzy nie ocenili żadnego utworu.
--- Find customers who have not rated any songs.
+-- Find customers who have NOT rated ANY songs.
 (SELECT idklienta FROM klienci)
-except
+EXCEPT
 (SELECT idklienta FROM oceny);
 -- OR
 SELECT *
@@ -148,7 +148,7 @@ SELECT *
 
 
 -- Wybierz wszystkie albumy wydane w danym roku. 
--- Select all albums released in a given year.
+-- SELECT all albums released IN a given year.
 SELECT *
     FROM albumy
     WHERE date_part('year', data_wydania) = 2015;
@@ -156,7 +156,7 @@ SELECT *
 
 -- Znajdź najpopularniejszy gatunek muzyczny (najwięcej albumów).
 -- Find the most popular music genre (most albums).
-SELECT gatunek, count(*) AS ilosc
+SELECT gatunek, COUNT(*) AS ilosc
     FROM albumy
     GROUP BY albumy
     ORDER BY ilosc DESC
@@ -164,8 +164,8 @@ SELECT gatunek, count(*) AS ilosc
 
 
 -- Policz, ile utworów jest w każdej playliste danego klienta. 
--- Count how many songs are in each customer's playlist.
-SELECT idklienta, idplaylisty, count(*) AS iloscUtworow
+-- COUNT how many songs are IN each customer's playlist.
+SELECT idklienta, idplaylisty, COUNT(*) AS iloscUtworow
     FROM klienci
     NATURAL JOIN playlisty
     LEFT JOIN zawartosc USING(idplaylisty);
@@ -180,34 +180,34 @@ SELECT *
 
 
 -- Policz, ile albumów zostało wydanych przez każdego wykonawcę.
---Count how many albums were released BY each artist.
-SELECT idwykonawcy, count(idalbumu) AS liczba_albumow
+--COUNT how many albums were released BY each artist.
+SELECT idwykonawcy, COUNT(idalbumu) AS liczba_albumow
     FROM wykonawcy
     LEFT JOIN albumy USING(idwykonawcy)
     GROUP BY idwykonwacy;
 
 
 -- Dla każdego utworu, liczbę playlist w których występuje.
--- For each song, the number of playlists it appears in.
-SELECT idutworu, count(*)
+-- FOR each song, the number of playlists it appears IN.
+SELECT idutworu, COUNT(*)
     FROM zawartosc
     GROUP BY idutworu;
 
 
 -- Znajdź średnią ocenę danego utworu.
 -- Find the average rating of a given song.
-SELECT nazwa, COALESCE(avg(lubi::int), 0.5) 
+SELECT nazwa, COALESCE(AVG(lubi::INT), 0.5) 
     FROM utwory
     LEFT JOIN oceny USING(idutworu)
     GROUP BY idutworu, nazwa;
 --OR, tu moze byc problem z tymi ktore nie maja oceny. there may be a problem with those who don't have a rating
-SELECT nazwa, (SELECT COALESCE(avg(lubi::int), 0.5) FROM oceny o WHERE o.idutworu = u.idutworu)
+SELECT nazwa, (SELECT COALESCE(AVG(lubi::INT), 0.5) FROM oceny o WHERE o.idutworu = u.idutworu)
     FROM utwory u;
 
 
 --Zlicz ile albumów zostało wydanych w każdym z roków.
---Count how many albums were released in each year.
-SELECT date_part('year', data_wydania) AS rok, count(*)
+--COUNT how many albums were released IN each year.
+SELECT date_part('year', data_wydania) AS rok, COUNT(*)
     FROM albumy
     GROUP BY rok;
 
@@ -233,7 +233,7 @@ SELECT date_part('year', data_wydania) AS rok, count(*)
 Napisz zapytania SQL tworzące w bazie tabele albumy i wykonawcy
 (patrz: załączony schemat).
 Zadbaj o utworzenie właściwych kluczy głównych i kluczy obcych
-(mogą być częścią zapytań CREATE lub
+(mogą BYć częścią zapytań CREATE lub
 stanowić odrębne zapytania typu ALTER).
 
 
@@ -244,52 +244,52 @@ tylko jedną z wartości: ’Rock’, ’Pop’,
 */
 
 
-create table albumy(
-    idalbumu serial primary key, -- serial robi to za mnie, ale alternatywnie create sequence seq1, i tutaj integer primary key default nextval('seq1');
-    idwykonawcy integer not null,
-    nazwa varchar(50) not null,
-    gatunek varchar(20) not null,
-    data_wydania date not null
+CREATE TABLE albumy(
+    idalbumu serial PRIMARY KEY, -- serial robi TO za mnie, ale alternatywnie CREATE sequence seq1, i tutaj INTEGER PRIMARY KEY DEFAULT nextval('seq1');
+    idwykonawcy INTEGER NOT NULL,
+    nazwa VARCHAR(50) NOT NULL,
+    gatunek VARCHAR(20) NOT NULL,
+    data_wydania DATE NOT NULL
 );
 
-create table wykonawcy(
-    idwykonawcy serial primary key,
-    nazwa varchar(100) not null,
-    kraj varchar(30) not null,
-    data_debiutu date not null,
-    data_zakonczenia date
+CREATE TABLE wykonawcy(
+    idwykonawcy serial PRIMARY KEY,
+    nazwa VARCHAR(100) NOT NULL,
+    kraj VARCHAR(30) NOT NULL,
+    data_debiutu DATE NOT NULL,
+    data_zakonczenia DATE
 );
 
-alter table albumy add constraint albumy_idwykonawcy_fk foreign key(idwykonawcy) references wykonawcy;
+ALTER TABLE albumy add CONSTRAINT albumy_idwykonawcy_fk FOREIGN KEY(idwykonawcy) REFERENCES wykonawcy;
 
 
-alter table klienci add constraint min_login check(length(login) >= 5);
-alter table albumy add constraint dozwolony_gatunek check(gatunek in ('Rock', 'Pop', 'Metal'));
+ALTER TABLE klienci add CONSTRAINT min_login CHECK(length(login) >= 5);
+ALTER TABLE albumy add CONSTRAINT dozwolony_gatunek CHECK(gatunek IN ('Rock', 'Pop', 'Metal'));
 
 /*
-Korzystając z operatorów all oraz any (obu)
+Korzystając z operatorów all oraz ANY (obu)
 napisz zapytanie SQL pobierające z bazy ID wszystkich
 playlist, dla których wszystkie znajdujące się na
 nich utwory są dłuższe niż 300 sekund oraz co najmniej
 jeden z ich utworów należy do gatunku ’Pop’
 */
 
-select idplaylisty from playlisty p
-    where
-    300 < all (select dlugosc from utwory
-        natural join z.zawartosc
-        where z.idplaylisty = p.idplaylisty) and
-    'Pop' = any (select gatunek from zawartosc
-        natural join utwory join albumy using(idalbumu)
-        where z.idalbumu = p.idalbumu);
+SELECT idplaylisty FROM playlisty p
+    WHERE
+    300 < all (SELECT dlugosc FROM utwory
+        NATURAL JOIN z.zawartosc
+        WHERE z.idplaylisty = p.idplaylisty) AND
+    'Pop' = ANY (SELECT gatunek FROM zawartosc
+        NATURAL JOIN utwory JOIN albumy USING(idalbumu)
+        WHERE z.idalbumu = p.idalbumu);
 
 
 /*
 Napisz funkcję o nazwie uzupelnij_playliste, która przyjmuje
-trzy argumenty: idplaylisty_od (int), idplaylisty_do (int),
-polub (boolean). Funkcja skopiuje z playlisty idplaylisty_od
+trzy argumenty: idplaylisty_od (INT), idplaylisty_do (INT),
+polub (BOOLEAN). Funkcja skopiuje z playlisty idplaylisty_od
 do playlisty idplaylisty_do utwory, które nie występują na tej drugiej.
-Jeżeli parametr polub jest równy TRUE to dla skopiowanych
+Jeżeli parametr polub jest równy TRUE TO dla skopiowanych
 utworów funkcja doda oceny pozytywne (lubi = TRUE),
 wystawione przez właściciela drugiej playlisty, ale
 tylko jeśli jeszcze nie mają od niego ocen.
@@ -297,37 +297,37 @@ Funkcja zwraca tabelę zawierającą wszystkie utwory (wiersze
 z tabeli utwory) znajdujące się na playliście idplaylisty_do
 po operacji kopiowania
 */
-begin;
-create or replace function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
-returns setof utwory as
+BEGIN;
+CREATE OR REPLACE FUNCTION uzupelnij_playliste(idplaylisty_od INTEGER, idplaylisty_do INTEGER, polub BOOLEAN)
+RETURNS SETOF utwory AS
 $$
-declare
-    v_idutworu integer;
-    idklienta_do integer;
-begin
-    select idklienta into idklienta_do from playlisty where idplaylisty = idplaylisty_do;
+DECLARE
+    v_idutworu INTEGER;
+    idklienta_do INTEGER;
+BEGIN
+    SELECT idklienta INTO idklienta_do FROM playlisty WHERE idplaylisty = idplaylisty_do;
 -- petla zawierajaca tylko utwory ktore sa na playliscie od i nie ma na playliscie do
-    for v_idutworu in select idutworu from zawartosc
-        where idplaylisty = idplaylisty_od and
-        idutworu not in (select idutworu from zawartosc where idplaylisty = idplaylisty_do)
-    loop
-        insert into zawartosc values(idplaylisty_do, v_idutworu);
+    FOR v_idutworu IN SELECT idutworu FROM zawartosc
+        WHERE idplaylisty = idplaylisty_od AND
+        idutworu NOT IN (SELECT idutworu FROM zawartosc WHERE idplaylisty = idplaylisty_do)
+    LOOP
+        INSERT INTO zawartosc values(idplaylisty_do, v_idutworu);
 
         -- jesli jest flaga i utworu nie ma w zbiorze utworow z ocena klienta_do
-        if polub and v_idutworu not in (select idutworu from oceny where idklienta = idklienta_do) then
-            insert into oceny(idutworu, idklienta, lubi) values(v_idutworu, idklienta_do, TRUE);
-        end if;
-    end loop;
+        IF polub AND v_idutworu NOT IN (SELECT idutworu FROM oceny WHERE idklienta = idklienta_do) THEN
+            INSERT INTO oceny(idutworu, idklienta, lubi) values(v_idutworu, idklienta_do, TRUE);
+        END IF;
+    END LOOP;
 
-    return query select idutworu, idalbumu, nazwa, dlugosc from zawartosc natural join utwory where idplaylisty = idplaylisty_do;
-end;
-$$ language plpgsql;
+    RETURN QUERY SELECT idutworu, idalbumu, nazwa, dlugosc FROM zawartosc NATURAL JOIN utwory WHERE idplaylisty = idplaylisty_do;
+END;
+$$ LANGUAGE PLPGSQL;
 
-select * from zawartosc where idplaylisty = 1;
-select * from zawartosc where idplaylisty = 2;
-select 'a tera jest funkcja i nowa tabela polubien';
-select * from uzupelnij_playliste(1, 2, TRUE);
-select * from oceny;
+SELECT * FROM zawartosc WHERE idplaylisty = 1;
+SELECT * FROM zawartosc WHERE idplaylisty = 2;
+SELECT 'a tera jest funkcja i nowa tabela polubien';
+SELECT * FROM uzupelnij_playliste(1, 2, TRUE);
+SELECT * FROM oceny;
 
 rollback;
 
@@ -336,7 +336,7 @@ rollback;
 Napisz zapytania SQL tworzące w bazie tabele klienci i playlist
 (patrz: załączony schemat).
 Zadbaj o utworzenie właściwych kluczy głównych i kluczy obcych
-(mogą być częścią zapytań CREATE
+(mogą BYć częścią zapytań CREATE
 lub stanowić odrębne zapytania typu ALTER). Dodatkowo nałóż
 ograniczenia na kolumny, aby nazwa
 playlisty miała co najmniej 5 znaków oraz kraj wykonawcy mógł
@@ -344,51 +344,51 @@ przyjmować tylko jedną z wartości:
 ’Polska’, ’Niemcy’, ’Hiszpania’.
 */
 
-create table klienci(
-    idklienta serial primary key,
-    login varchar(50) not null,
-    data_rejestracji date not null,
-    data_urodzenia date not null
+CREATE TABLE klienci(
+    idklienta serial PRIMARY KEY,
+    login VARCHAR(50) NOT NULL,
+    data_rejestracji DATE NOT NULL,
+    data_urodzenia DATE NOT NULL
 );
 
-create table palylisty(
-    idplaylisty serial primary key,
-    idklienta integer not null foreign key references klienci,
-    nazwa varchar(30) not null
+CREATE TABLE palylisty(
+    idplaylisty serial PRIMARY KEY,
+    idklienta INTEGER NOT NULL FOREIGN KEY REFERENCES klienci,
+    nazwa VARCHAR(30) NOT NULL
 );
 
-alter table playlisty add constraint palylisty_idklienta_fk foreign key(idklienta) references klienci;
+ALTER TABLE playlisty add CONSTRAINT palylisty_idklienta_fk FOREIGN KEY(idklienta) REFERENCES klienci;
 
-alter table palylisty add constraint min_dlogosc check(length(nazwa) >= 5);
+ALTER TABLE palylisty add CONSTRAINT min_dlogosc CHECK(length(nazwa) >= 5);
 
-alter table wykonawcy add constraint dozwolony_kraj check(kraj in ('Polska', 'Niemcy', 'Hiszpania'));
+ALTER TABLE wykonawcy add CONSTRAINT dozwolony_kraj CHECK(kraj IN ('Polska', 'Niemcy', 'Hiszpania'));
 
 
 
 /*
-Korzystając z operatora any napisz zapytanie SQL pobierające
+Korzystając z operatora ANY napisz zapytanie SQL pobierające
 z bazy ID wszystkich playlist, dla
 których co najmniej jeden ze znajdujących się na nich utworów
 jest dłuższy niż 300 sekund oraz wszystkie
 ich utwory należą do gatunku ’Pop’
 */
 
-select idplaylisty from playlisty p where
-    300 < any (select dlugosc from zawartosc z
-        natural join utwory where z.idplaylisty = p.idplaylisty) and
-    'Pop' = all (select gatunek from zawartosc z
-        natural join utwory join albumy using(idablumu)
-        where z.idplaylisty = p.idplaylisty);
+SELECT idplaylisty FROM playlisty p WHERE
+    300 < ANY (SELECT dlugosc FROM zawartosc z
+        NATURAL JOIN utwory WHERE z.idplaylisty = p.idplaylisty) AND
+    'Pop' = all (SELECT gatunek FROM zawartosc z
+        NATURAL JOIN utwory JOIN albumy USING(idablumu)
+        WHERE z.idplaylisty = p.idplaylisty);
 
 
 
 /*
 Napisz funkcję o nazwie uzupelnij_playliste, która przyjmuje trzy argumenty:
-idplaylisty_od (int),
-idplaylisty_do (int), polub (boolean). Funkcja skopiuje z playlisty
+idplaylisty_od (INT),
+idplaylisty_do (INT), polub (BOOLEAN). Funkcja skopiuje z playlisty
 idplaylisty_od do playlisty idplaylisty_do
 utwory, które nie występują na tej drugiej. Jeżeli parametr polub jest
-równy TRUE to dla skopiowanych
+równy TRUE TO dla skopiowanych
 utworów funkcja doda oceny pozytywne (lubi = TRUE), wystawione przez
 właściciela drugiej playlisty, ale
 tylko jeśli jeszcze nie mają od niego ocen. Funkcja zwraca tabelę
@@ -397,23 +397,23 @@ z tabeli utwory) znajdujące się na playliście idplaylisty_do po
 operacji kopiowania.
 */
 
-create function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
-returns setof utwory as
+CREATE FUNCTION uzupelnij_playliste(idplaylisty_od INTEGER, idplaylisty_do INTEGER, polub BOOLEAN)
+RETURNS SETOF utwory AS
 $$
-declare
-    idklienta_do integer;
-    v_idutworu integer;
-begin
-    select idklienta into idklienta_do from playlisty where idplaylisty = idplaylisty_do;
+DECLARE
+    idklienta_do INTEGER;
+    v_idutworu INTEGER;
+BEGIN
+    SELECT idklienta INTO idklienta_do FROM playlisty WHERE idplaylisty = idplaylisty_do;
     
     -- petla po idutworow z playlisty idplaylisty_od takie ktorych nie ma na playliscie idplaylisty_do
-    for v_idutworu in select idutworu from zawartosc
-        where idplaylisty = idplaylisty_od and
-        idutworu not in (select idutworu from zawartosc where playlisty = idplaylisty_do)
-    loop
+    FOR v_idutworu IN SELECT idutworu FROM zawartosc
+        WHERE idplaylisty = idplaylisty_od AND
+        idutworu NOT IN (SELECT idutworu FROM zawartosc WHERE playlisty = idplaylisty_do)
+    LOOP
 
 
-    end loop;  
+    END LOOP;  
 
-end;
-$$ language plpgsql;
+END;
+$$ LANGUAGE PLPGSQL;
