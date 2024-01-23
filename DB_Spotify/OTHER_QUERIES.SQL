@@ -214,3 +214,206 @@ SELECT date_part('year', data_wydania) AS rok, count(*)
 
 
 
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+--                               KOLOS 2
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+-- =======================================================================
+
+
+/*
+Napisz zapytania SQL tworzące w bazie tabele albumy i wykonawcy
+(patrz: załączony schemat).
+Zadbaj o utworzenie właściwych kluczy głównych i kluczy obcych
+(mogą być częścią zapytań CREATE lub
+stanowić odrębne zapytania typu ALTER).
+
+
+Dodatkowo nałóż ograniczenia na kolumny, aby login klienta
+miał co najmniej 5 znaków oraz gatunek albumu mógł przyjmować
+tylko jedną z wartości: ’Rock’, ’Pop’,
+’Metal’
+*/
+
+
+create table albumy(
+    idalbumu serial primary key, -- serial robi to za mnie, ale alternatywnie create sequence seq1, i tutaj integer primary key default nextval('seq1');
+    idwykonawcy integer not null,
+    nazwa varchar(50) not null,
+    gatunek varchar(20) not null,
+    data_wydania date not null
+);
+
+create table wykonawcy(
+    idwykonawcy serial primary key,
+    nazwa varchar(100) not null,
+    kraj varchar(30) not null,
+    data_debiutu date not null,
+    data_zakonczenia date
+);
+
+alter table albumy add constraint albumy_idwykonawcy_fk foreign key(idwykonawcy) references wykonawcy;
+
+
+alter table klienci add constraint min_login check(length(login) >= 5);
+alter table albumy add constraint dozwolony_gatunek check(gatunek in ('Rock', 'Pop', 'Metal'));
+
+/*
+Korzystając z operatorów all oraz any (obu)
+napisz zapytanie SQL pobierające z bazy ID wszystkich
+playlist, dla których wszystkie znajdujące się na
+nich utwory są dłuższe niż 300 sekund oraz co najmniej
+jeden z ich utworów należy do gatunku ’Pop’
+*/
+
+select idplaylisty from playlisty p
+    where
+    300 < all (select dlugosc from utwory
+        natural join z.zawartosc
+        where z.idplaylisty = p.idplaylisty) and
+    'Pop' = any (select gatunek from zawartosc
+        natural join utwory join albumy using(idalbumu)
+        where z.idalbumu = p.idalbumu);
+
+
+/*
+Napisz funkcję o nazwie uzupelnij_playliste, która przyjmuje
+trzy argumenty: idplaylisty_od (int), idplaylisty_do (int),
+polub (boolean). Funkcja skopiuje z playlisty idplaylisty_od
+do playlisty idplaylisty_do utwory, które nie występują na tej drugiej.
+Jeżeli parametr polub jest równy TRUE to dla skopiowanych
+utworów funkcja doda oceny pozytywne (lubi = TRUE),
+wystawione przez właściciela drugiej playlisty, ale
+tylko jeśli jeszcze nie mają od niego ocen.
+Funkcja zwraca tabelę zawierającą wszystkie utwory (wiersze
+z tabeli utwory) znajdujące się na playliście idplaylisty_do
+po operacji kopiowania
+*/
+begin;
+create or replace function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
+returns setof utwory as
+$$
+declare
+    v_idutworu integer;
+    idklienta_do integer;
+begin
+    select idklienta into idklienta_do from playlisty where idplaylisty = idplaylisty_do;
+-- petla zawierajaca tylko utwory ktore sa na playliscie od i nie ma na playliscie do
+    for v_idutworu in select idutworu from zawartosc
+        where idplaylisty = idplaylisty_od and
+        idutworu not in (select idutworu from zawartosc where idplaylisty = idplaylisty_do)
+    loop
+        insert into zawartosc values(idplaylisty_do, v_idutworu);
+
+        -- jesli jest flaga i utworu nie ma w zbiorze utworow z ocena klienta_do
+        if polub and v_idutworu not in (select idutworu from oceny where idklienta = idklienta_do) then
+            insert into oceny(idutworu, idklienta, lubi) values(v_idutworu, idklienta_do, TRUE);
+        end if;
+    end loop;
+
+    return query select idutworu, idalbumu, nazwa, dlugosc from zawartosc natural join utwory where idplaylisty = idplaylisty_do;
+end;
+$$ language plpgsql;
+
+select * from zawartosc where idplaylisty = 1;
+select * from zawartosc where idplaylisty = 2;
+select 'a tera jest funkcja i nowa tabela polubien';
+select * from uzupelnij_playliste(1, 2, TRUE);
+select * from oceny;
+
+rollback;
+
+
+/*
+Napisz zapytania SQL tworzące w bazie tabele klienci i playlist
+(patrz: załączony schemat).
+Zadbaj o utworzenie właściwych kluczy głównych i kluczy obcych
+(mogą być częścią zapytań CREATE
+lub stanowić odrębne zapytania typu ALTER). Dodatkowo nałóż
+ograniczenia na kolumny, aby nazwa
+playlisty miała co najmniej 5 znaków oraz kraj wykonawcy mógł
+przyjmować tylko jedną z wartości:
+’Polska’, ’Niemcy’, ’Hiszpania’.
+*/
+
+create table klienci(
+    idklienta serial primary key,
+    login varchar(50) not null,
+    data_rejestracji date not null,
+    data_urodzenia date not null
+);
+
+create table palylisty(
+    idplaylisty serial primary key,
+    idklienta integer not null foreign key references klienci,
+    nazwa varchar(30) not null
+);
+
+alter table playlisty add constraint palylisty_idklienta_fk foreign key(idklienta) references klienci;
+
+alter table palylisty add constraint min_dlogosc check(length(nazwa) >= 5);
+
+alter table wykonawcy add constraint dozwolony_kraj check(kraj in ('Polska', 'Niemcy', 'Hiszpania'));
+
+
+
+/*
+Korzystając z operatora any napisz zapytanie SQL pobierające
+z bazy ID wszystkich playlist, dla
+których co najmniej jeden ze znajdujących się na nich utworów
+jest dłuższy niż 300 sekund oraz wszystkie
+ich utwory należą do gatunku ’Pop’
+*/
+
+select idplaylisty from playlisty p where
+    300 < any (select dlugosc from zawartosc z
+        natural join utwory where z.idplaylisty = p.idplaylisty) and
+    'Pop' = all (select gatunek from zawartosc z
+        natural join utwory join albumy using(idablumu)
+        where z.idplaylisty = p.idplaylisty);
+
+
+
+/*
+Napisz funkcję o nazwie uzupelnij_playliste, która przyjmuje trzy argumenty:
+idplaylisty_od (int),
+idplaylisty_do (int), polub (boolean). Funkcja skopiuje z playlisty
+idplaylisty_od do playlisty idplaylisty_do
+utwory, które nie występują na tej drugiej. Jeżeli parametr polub jest
+równy TRUE to dla skopiowanych
+utworów funkcja doda oceny pozytywne (lubi = TRUE), wystawione przez
+właściciela drugiej playlisty, ale
+tylko jeśli jeszcze nie mają od niego ocen. Funkcja zwraca tabelę
+zawierającą wszystkie utwory (wiersze
+z tabeli utwory) znajdujące się na playliście idplaylisty_do po
+operacji kopiowania.
+*/
+
+create function uzupelnij_playliste(idplaylisty_od integer, idplaylisty_do integer, polub boolean)
+returns setof utwory as
+$$
+declare
+    idklienta_do integer;
+    v_idutworu integer;
+begin
+    select idklienta into idklienta_do from playlisty where idplaylisty = idplaylisty_do;
+    
+    -- petla po idutworow z playlisty idplaylisty_od takie ktorych nie ma na playliscie idplaylisty_do
+    for v_idutworu in select idutworu from zawartosc
+        where idplaylisty = idplaylisty_od and
+        idutworu not in (select idutworu from zawartosc where playlisty = idplaylisty_do)
+    loop
+
+
+    end loop;  
+
+end;
+$$ language plpgsql;

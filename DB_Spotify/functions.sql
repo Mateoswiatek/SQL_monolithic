@@ -672,5 +672,118 @@ select idplaylisty, kraj, count(*) as ilosc_utworow from wykonawcy
     group by kraj, idplaylisty
     order by ilosc_utworow desc;
 
-
 select liczba_z_kraju(7, 'Polska');
+
+
+/*
+15.
+Napisz funkcje
+polub_utwory_wykonawcy która przyjmuje
+3 argumenty: loginklienta, idwykonawcy,
+polub(boolean). Funkcja dodaje polubienia
+do wszystkich utworów znajdujących się na
+wszystkich playlistach klienta o loginie
+loginklienta (jeśli wartość polub jest
+ustawiona na True), ktore należą do
+albumów wykonawcy o id = idwykonawcy i
+nie zostały wcześniej polubione przez
+klienta. Funkcja zwraca wszystkie
+polubione utwory z playlist klienta (po
+operacji polubienia utworów wykonawców)
+(idplaylisty, idutworu, idklienta, lubi)
+
+
+-- czyli mialy wartosc false lub null. 
+-- jesli byloby polub = false, no to w tedy wszystkie bysmy ustawili na false
+-- polubione, czyli jesli byly na lubi=false, to rowniez sie do tego zalicza.
+-- wszystko co nie jest lubi=true to sie zalicza do tego.
+
+i nie zostały wcześniej polubione przez
+klienta.
+*/
+
+begin;
+
+create or replace function polub_utwory_wykonawcy(loginklienta_ varchar(50), idwykonawcy_ integer, polub boolean)
+returns table(
+    r_idplaylisty integer,
+    r_idutworu integer,
+    r_idklienta integer,
+    r_lubi boolean
+) as
+$$
+declare
+    idklienta_ integer;
+begin
+
+-- dodanie kopi zapasowej
+    create temporary table oceny_tmp
+    as select * from oceny;
+
+    select idklienta into idklienta_ from klienci where login = loginklienta_;
+
+    -- distinct na idutworu, bo moze byc w wielu playlistach, ale 
+    -- i tak dla kazdego tylko jeden raz musimy to wykonac, inne sa const
+    
+    -- tutaj np moglem zrobic join albumy
+    -- i dac sam waurnek ale co jest bardziej wydane?
+
+    -- optymalizacja czy bardziej sie oplaca rozbic na dwa:
+    -- modyfikacja niepolubionych na polubione  
+    -- oraz dodanie zypelnie nowych, - wymaga sprawdzenia tych ktorych nie ma, ewentualnie 
+    -- ewentualnie "zapisanie" danych ktore sa wyrzucane z except, bo w tedy to moze byloby szybsze.
+
+    -- czy takie podejscie jak ja zrobilem
+    insert into oceny 
+    select distinct(idutworu), idklienta_, polub from playlisty
+        natural join zawartosc
+        join utwory using(idutworu)
+        -- join albumy using(idalbumu) --   ALTERNATYWA
+        where
+            idklienta = idklienta_ and
+        -- idwykonawcy = idwykonawcy_ --    ALTERNATYWA
+            idalbumu in (select idalbumu from albumy
+                where idwykonawcy = idwykonawcy_) -- zamiast tego
+    on conflict(idutworu, idklienta) do update set lubi = polub; -- ta co ma byc wstawiane: EXCLUDED.lubi
+-- dajemy ktore kolumny sa odpwoeidzalne za konflikt
+
+    return query select idplaylisty, idutworu, idklienta, lubi from klienci
+        natural join oceny
+        natural join playlisty
+        where idklienta = idklienta_;
+
+    
+-- sprzatanie:
+    delete from oceny;
+    insert into oceny select * from oceny_tmp;
+
+end;
+$$ language plpgsql;
+
+/*
+select * from oceny natural join utwory where idklienta = 1;
+select * from albumy where idalbumu = 1;
+*/
+
+select * from oceny natural join utwory where idklienta = 1;
+select * from polub_utwory_wykonawcy('user1', 1, true);
+
+-- do testu aby sprawdzic, czy nie ma zdublowanych wartosci,
+-- chcąc sprawdzić, trzeba usunac z funkji "sprzątanie" 
+-- ale tu nizej trzeba odkomendowac.
+
+-- select * from oceny where idklienta = 1;
+-- delete from oceny;
+-- insert into oceny select * from oceny_tmp;
+
+select * from oceny natural join utwory where idklienta = 1;
+
+rollback;
+
+
+/*
+INNE INNYM RAZEM XD
+*/
+
+
+/*
