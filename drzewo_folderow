@@ -1,6 +1,7 @@
 DB_nazwa_bazy
-- nazwa_bazy_create.sql - tworzy schemat ze wszystkimi zaleznosciami - domyslnie usuwa istniejace
-- nazwa_bazy_insert_data_index.sql - dodaje dane (w tym pliku jest zakomendowane czy ma usuwać czxy dodawać)
-- nazwa_bazy_add_functions.sql - plik ktory dodaje funkcje
+- nazwa_bazy_setup_create.sql - tworzy schemat ze wszystkimi zaleznosciami - domyslnie usuwa istniejace
+- nazwa_bazy_setup_insert_data_index.sql - dodaje dane (w tym pliku jest zakomendowane czy ma usuwać czxy dodawać)
+- nazwa_bazy_setup_add_functions.sql - plik ktory dodaje funkcje
+
 - nazwa_bazy_test_functions.sql - plik ktory testuje zapytania
 - nazwa_bazy_queries.sql - przykladowe zapytania do bazy danych

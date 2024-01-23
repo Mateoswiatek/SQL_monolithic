@@ -162,6 +162,8 @@ INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia)
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('148', 'Gilbert Orłowski', 'Libia', '2023-09-14', '2023-08-18');
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('149', 'Olimpia Jankowiak', 'Litwa', '2023-08-31', '2023-04-12');
 
+
+
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('0', '41', 'Po Prostu Badz', 'Pop', '2023-10-15');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('1', '146', 'Nim Stanie Się Tak, Jak Gdyby Nigdy Nic', 'Reggae', '2023-06-09');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('2', '145', 'Dorosłe Dzieci', 'Hip Hop', '2023-07-30');
@@ -762,6 +764,7 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('597', '58', 'Zegarmistrz Światła', 'Rap', '2023-06-21');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('598', '85', 'Lubię Mówić Z Tobą', 'Funk', '2023-02-24');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('599', '35', 'Wiosna, Ach To Ty', 'Elektroniczna', '2023-02-12');
+
 
 
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1', '0', 'Niemiłość', '607');
@@ -4684,6 +4687,7 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3917', '599', '
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3918', '599', 'Stare Drzewa', '283');
 
 
+
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('0', 'Gertruda_Jastrzebski', '2023-11-10', '2023-12-09');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('1', 'Ryszard_S8yowinski', '2023-05-07', '2023-05-25');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('2', 'Arystarch.Bober72', '2023-02-02', '2023-02-07');
@@ -5086,6 +5090,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('296', '82', 'Jeś
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('297', '26', 'Hej, Czy Nie Wiecie');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('298', '60', 'W Dobrą Stronę');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('299', '12', 'Spalam Się');
+
 
 
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('185', '3783');
@@ -6406,7 +6411,6 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('297', '1534');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('25', '282');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('178', '1447');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('62', '3237');
-INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('245', '86');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('30', '2267');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('273', '188');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('17', '3808');
@@ -6641,7 +6645,6 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('65', '361');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('165', '2571');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('160', '1196');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('21', '2845');
-INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('143', '2443');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('256', '1345');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('48', '1495');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('275', '3258');
@@ -7238,7 +7241,6 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('274', '2227');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('281', '3865');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('240', '1966');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('131', '3873');
-INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('31', '1615');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('126', '436');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('289', '1884');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('119', '1525');
@@ -8859,7 +8861,6 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('67', '65');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('26', '1472');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('46', '2520');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('85', '1898');
-INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('195', '408');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('206', '1223');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('219', '1771');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('204', '2674');
@@ -9090,7 +9091,7 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('150', '3486');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('258', '3353');
 
 -- usuniecie 	-- CONSTRAINT zawartosc_pk PRIMARY KEY (idplaylisty,idutworu) i wyszukanie:
-select * from zawartosc group by(idplaylisty, idutworu) having count(*) > 1;
+-- select * from zawartosc group by(idplaylisty, idutworu) having count(*) > 1;
 /*
 -- te wartosci usuwamy
 245	86
@@ -9098,8 +9099,6 @@ select * from zawartosc group by(idplaylisty, idutworu) having count(*) > 1;
 3	195	408
 4	143	2443
 */ 
-
-commit;
 
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('62', '2616', 'false');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('34', '877', 'true');
@@ -12090,9 +12089,4 @@ INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('20', '600', 'false');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('82', '3400', 'true');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('82', '1010', 'true');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('52', '2211', 'true');
-
-
-
-
-
 COMMIT;
