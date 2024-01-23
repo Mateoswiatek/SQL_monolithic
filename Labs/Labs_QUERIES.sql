@@ -1,7 +1,25 @@
 SET search_path TO siatkowka, kwiaciarnia, public;
 
 // Problem, bo zamiast w kwiaciarni mam wszystko w publicu.
-ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, testowe, spotify; 
+ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, spotify; 
+
+
+
+
+drop table siatkowka.maz cascade;
+drop table siatkowka.zona cascade;
+
+drop table siatkowka.zamowienia cascade;
+drop table siatkowka.pracownicy cascade;
+drop table siatkowka.dzialy cascade;
+drop table siatkowka.albumy cascade;
+drop table siatkowka.zamowienia_temp cascade;
+
+
+
+
+SELECT table_name, table_schema
+FROM information_schema.tables order by table_schema desc;
 
 
 INSERT INTO test (id, name) VALUES
@@ -2585,3 +2603,6 @@ $$ language plpgsql;
 select nazwa_funkcji(60.0);
 select * from test;
 drop function nazwa_funkcji(numeric(7,2));
+
+
+

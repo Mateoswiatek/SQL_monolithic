@@ -1,3 +1,16 @@
+BEGIN;
+
+SET search_path TO spotify;
+SET CONSTRAINTS ALL DEFERRED;
+
+DELETE FROM wykonawcy;
+DELETE FROM albumy;
+DELETE FROM utwory;
+DELETE FROM zawartosc;
+DELETE FROM playlisty;
+DELETE FROM klienci;
+DELETE FROM oceny;
+
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('0', 'Osmund Kmiecik', 'Japonia', '2023-10-27', '2023-10-07');
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('1', 'Maksym Gołębiowski', 'Gruzja', '2023-12-30', '2023-09-16');
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('2', 'Bruno Hajduk', 'Antigua i Barbuda', '2023-05-05', '2023-06-14');
@@ -147,7 +160,9 @@ INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia)
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('146', 'Marcin Olszewski', 'Botswana', '2023-04-02', '2023-10-30');
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('147', 'Tekla Pietras', 'Belize', '2024-01-17', '2024-01-05');
 INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('148', 'Gilbert Orłowski', 'Libia', '2023-09-14', '2023-08-18');
-INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('149', 'Olimpia Jankowiak', 'Litwa', '2023-08-31', '2023-04-12');INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('0', '41', 'Po Prostu Bądź', 'Pop', '2023-10-15');
+INSERT INTO wykonawcy (idwykonawcy, nazwa, kraj, data_debiutu, data_zakonczenia) VALUES ('149', 'Olimpia Jankowiak', 'Litwa', '2023-08-31', '2023-04-12');
+
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('0', '41', 'Po Prostu Badz', 'Pop', '2023-10-15');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('1', '146', 'Nim Stanie Się Tak, Jak Gdyby Nigdy Nic', 'Reggae', '2023-06-09');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('2', '145', 'Dorosłe Dzieci', 'Hip Hop', '2023-07-30');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('3', '54', 'Ciągnik', 'Reggae', '2023-02-18');
@@ -230,7 +245,7 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('80', '75', 'Miłość, Miłość', 'Elektroniczna', '2023-04-16');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('81', '145', 'Bema Pamięci Żałobny - Rapsod', 'Disco polo', '2023-02-15');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('82', '28', 'Piosenka Jest Dobra Na Wszystko', 'Hip Hop', '2023-04-19');
-INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('83', '56', 'Koncert Jesienny Na Dwa Świerszcze I Wiatr W Kominie', 'Hip Hop', '2023-06-12');
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('83', '56', 'Koncert Jesienny Na Dwa Świerszcze', 'Hip Hop', '2023-06-12');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('84', '104', 'Hi-Fi', 'Funk', '2023-10-28');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('85', '34', 'Sen O Warszawie', 'Blues', '2023-04-19');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('86', '21', 'Sie Ściemnia', 'Pop', '2023-11-23');
@@ -249,7 +264,7 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('99', '12', 'Nie Mam Dla Ciebie Miłości', 'Pop', '2023-02-25');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('100', '89', 'Pola', 'Metal', '2023-04-15');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('101', '60', 'Samba Przed Rozstaniem', 'Blues', '2023-05-31');
-INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('102', '55', 'Zaprzepaszczone Siły Wielkiej Armii Świętych Znaków', 'Country', '2023-10-23');
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('102', '55', 'Zaprzepaszczone Siły Wielkiej Armii Znaków', 'Country', '2023-10-23');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('103', '95', 'Niemiłość', 'Reggae', '2024-01-07');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('104', '75', 'Bo Jesteś Ty', 'Latynoska', '2023-08-02');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('105', '48', 'Paw', 'Disco polo', '2023-04-05');
@@ -363,7 +378,7 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('213', '107', 'Jaskółka Uwięziona', 'Country', '2024-01-18');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('214', '92', 'Partyzant', 'Blues', '2023-09-21');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('215', '113', 'Z Nim Będziesz Szczęśliwsza', 'Rap', '2023-07-15');
-INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('216', '148', 'Zaprzepaszczone Siły Wielkiej Armii Świętych Znaków', 'Soul', '2023-09-25');
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('216', '148', 'Zaprzepaszczone Siły Wielkiej Armii Znaków', 'Soul', '2023-09-25');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('217', '115', 'Ostatni', 'Rock', '2023-05-01');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('218', '113', 'Dziwny Jest Ten Świat', 'Elektroniczna', '2023-01-23');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('219', '144', 'Jestem W Niebie', 'Metal', '2023-11-11');
@@ -459,7 +474,7 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('309', '130', 'Obława', 'Jazz', '2023-03-27');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('310', '75', 'Bombonierka', 'Elektroniczna', '2023-06-08');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('311', '139', 'Dwa Ognie', 'Elektroniczna', '2023-03-20');
-INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('312', '140', 'Zaprzepaszczone Siły Wielkiej Armii Świętych Znaków', 'Klasyczna', '2023-11-22');
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('312', '140', 'Zaprzepaszczone Siły Wielkiej Armii Znaków', 'Klasyczna', '2023-11-22');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('313', '20', 'Lipstick On The Glass', 'Indie Pop', '2023-09-22');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('314', '117', 'Szaroróżowe', 'Klasyczna', '2023-09-14');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('315', '128', 'Czarne Słońca', 'Ludowa', '2023-03-13');
@@ -746,7 +761,10 @@ INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES 
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('596', '109', 'Sen', 'Soul', '2023-06-18');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('597', '58', 'Zegarmistrz Światła', 'Rap', '2023-06-21');
 INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('598', '85', 'Lubię Mówić Z Tobą', 'Funk', '2023-02-24');
-INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('599', '35', 'Wiosna, Ach To Ty', 'Elektroniczna', '2023-02-12');INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1', '0', 'Niemiłość', '607');
+INSERT INTO albumy (idalbumu, idwykonawcy, nazwa, gatunek, data_wydania) VALUES ('599', '35', 'Wiosna, Ach To Ty', 'Elektroniczna', '2023-02-12');
+
+
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1', '0', 'Niemiłość', '607');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('2', '0', 'Sobie I Wam', '297');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3', '0', 'Mój Dom', '148');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('4', '0', 'Paw', '89');
@@ -1063,7 +1081,7 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('314', '44', 'Uc
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('315', '44', 'Oczy Tej Małej', '564');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('316', '44', 'Spalam Się', '623');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('317', '44', 'Mississippi W Ogniu', '667');
-INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('318', '44', 'Och Życie, Kocham Cię Nad Życie', '433');
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('318', '44', 'Kocham Cię Nad Życie', '433');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('319', '44', 'Jeśli Wiesz Co Chcę Powiedzieć', '235');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('320', '44', 'Do Prostego Człowieka', '338');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('321', '45', 'Marchewkowe Pole', '45');
@@ -1232,7 +1250,7 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('483', '71', 'We
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('484', '71', 'Stare Drzewa', '395');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('485', '71', 'Celina', '118');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('486', '71', 'Statki Na Niebie', '287');
-INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('487', '71', 'Piosenka Jest Dobra Na Wszystko', '477');
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('487', '71', 'Piosenka Na Wszystko', '477');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('488', '71', 'Niech Żyje Bal', '361');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('489', '72', 'Malcziki', '411');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('490', '72', 'Adriatyk, Ocean Gorący', '206');
@@ -1673,7 +1691,7 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('924', '140', 'H
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('925', '140', 'Stare Drzewa', '596');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('926', '140', 'Wspomnienie', '597');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('927', '140', 'Oczy Tej Małej', '540');
-INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('928', '141', 'W Deszczu Maleńkich Żółtych Kwiatów', '640');
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('928', '141', 'W Deszczu Kwiatów', '640');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('929', '141', 'Nie Pytaj O Polskę', '257');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('930', '141', 'Horses', '413');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('931', '141', 'Krakowski Spleen', '232');
@@ -1753,7 +1771,7 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1004', '151', '
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1005', '151', 'Teksański', '134');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1006', '151', 'Dmuchawce, Latawce, Wiatr', '55');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1007', '151', 'Konstytucje', '264');
-INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1008', '151', 'Trudno Tak (Razem Być Nam Ze Sobą...)', '102');
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1008', '151', 'Trudno Tak', '102');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1009', '151', 'Tyle Słońca W Całym Mieście', '188');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1010', '151', 'Słodkiego Miłego Życia', '315');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('1011', '151', 'Psalm Stojących W Kolejce', '335');
@@ -4663,7 +4681,10 @@ INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3914', '599', '
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3915', '599', 'Śpiewać Każdy Może', '515');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3916', '599', 'Kawałek Podłogi', '422');
 INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3917', '599', 'Z Tobą / Do Domu', '304');
-INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3918', '599', 'Stare Drzewa', '283');INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('0', 'Gertruda_Jastrzebski', '2023-11-10', '2023-12-09');
+INSERT INTO utwory (idutworu, idalbumu, nazwa, dlugosc) VALUES ('3918', '599', 'Stare Drzewa', '283');
+
+
+INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('0', 'Gertruda_Jastrzebski', '2023-11-10', '2023-12-09');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('1', 'Ryszard_S8yowinski', '2023-05-07', '2023-05-25');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('2', 'Arystarch.Bober72', '2023-02-02', '2023-02-07');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('3', 'Kornel_Wyszynski', '2023-07-01', '2023-05-18');
@@ -4762,7 +4783,10 @@ INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES 
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('96', 'Kalistrat_Kobus', '2023-06-09', '2023-01-22');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('97', 'Porfiry.Kruk', '2023-05-16', '2023-03-02');
 INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('98', 'Liliana.Sieradzki29', '2023-05-21', '2023-04-28');
-INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('99', 'Ludwika.Szyszka', '2023-06-28', '2023-03-06');INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('0', '67', 'Następna Stacja');
+INSERT INTO klienci (idklienta, login, data_rejestracji, data_urodzenia) VALUES ('99', 'Ludwika.Szyszka', '2023-06-28', '2023-03-06');
+
+
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('0', '67', 'Następna Stacja');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('1', '76', 'List Do M.');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('2', '86', 'Pod Prąd');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('3', '63', 'Peggy Brown');
@@ -4782,7 +4806,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('16', '16', 'Krako
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('17', '48', 'Deszcz');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('18', '61', 'To Co Czujesz, To Co Wiesz');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('19', '94', 'Za Ostatni Grosz');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('20', '8', 'Och Życie, Kocham Cię Nad Życie');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('20', '8', 'Kocham Cię Nad Życie');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('21', '22', 'Jutro Możemy Być Szczęśliwi');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('22', '1', 'Kocham Wolność');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('23', '36', 'Małe Tęsknoty');
@@ -4839,7 +4863,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('73', '2', 'Tak, T
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('74', '14', 'Bieszczadzkie Anioły');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('75', '0', 'Groszki I Róże');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('76', '55', 'To Co Czujesz, To Co Wiesz');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('77', '88', 'Piosenka Jest Dobra Na Wszystko');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('77', '88', 'Piosenka Na Wszystko');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('78', '85', 'Kocham Cię Kochanie Moje');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('79', '50', 'Kocham Cię Jak Irlandię');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('80', '93', 'Małomiasteczkowy');
@@ -4889,7 +4913,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('123', '38', 'Sza�
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('124', '14', 'Krakowski Spleen');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('125', '96', 'Gdybym');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('126', '85', 'List');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('127', '41', 'W Deszczu Maleńkich Żółtych Kwiatów');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('127', '41', 'W Deszczu Żółtych Kwiatów');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('128', '83', 'Tam, Gdzie Nie Sięga Wzrok');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('129', '21', 'Mogło Być Nic');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('130', '80', 'Cztery Pokoje');
@@ -4937,7 +4961,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('171', '60', 'W Mo
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('172', '32', 'Mój Dom');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('173', '49', 'Spytaj Milicjanta');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('174', '55', 'Zanim Pójdę');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('175', '62', 'Trudno Tak (Razem Być Nam Ze Sobą...)');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('175', '62', 'Trudno Tak');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('176', '6', 'Z Tobą / Do Domu');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('177', '17', 'Adriatyk, Ocean Gorący');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('178', '97', 'Cień Wielkiej Góry');
@@ -4967,9 +4991,9 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('201', '87', 'Jej 
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('202', '72', 'Pod Prąd');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('203', '73', 'IV Liceum');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('204', '3', 'Nie Płacz Ewka');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('205', '97', 'I Nikomu Nie Wolno Się Z Tego Śmiać');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('205', '97', 'Nikomu Nie Wolno Się Śmiać');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('206', '19', 'Niebo Było Różowe');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('207', '35', 'Ta Noc Do Innych Jest Niepodobna');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('207', '35', 'Ta Noc Jest Niepodobna');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('208', '87', 'Lewe Lewe Loff');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('209', '4', 'Piła Tango');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('210', '85', 'Zapytaj Mnie Czy Cię Kocham');
@@ -5005,7 +5029,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('239', '50', 'Zaws
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('240', '17', 'Ocalić Od Zapomnienia');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('241', '20', 'Hej Wy');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('242', '40', 'Los, Cebula I Krokodyle Łzy');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('243', '69', 'Wieża Radości, Wieża Samotności');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('243', '69', 'Wieża Radości, Samotności');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('244', '38', 'Podaruj Mi Trochę Słońca');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('245', '66', 'Twój Ból Jest Lepszy Niż Mój');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('246', '4', 'Samba Przed Rozstaniem');
@@ -5030,7 +5054,7 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('264', '12', 'Z To
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('265', '96', 'Niebo Było Różowe');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('266', '32', 'Jedyne Co Mam');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('267', '16', 'Sen O Dolinie');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('268', '18', 'Nim Stanie Się Tak, Jak Gdyby Nigdy Nic');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('268', '18', 'Jak Gdyby Nigdy Nic');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('269', '83', 'Hej Wy');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('270', '38', 'Pod Papugami');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('271', '73', 'Mówię Ci Że');
@@ -5061,7 +5085,10 @@ INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('295', '79', 'W Ż
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('296', '82', 'Jeśli Wiesz Co Chcę Powiedzieć');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('297', '26', 'Hej, Czy Nie Wiecie');
 INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('298', '60', 'W Dobrą Stronę');
-INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('299', '12', 'Spalam Się');INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('185', '3783');
+INSERT INTO playlisty (idplaylisty, idklienta, nazwa) VALUES ('299', '12', 'Spalam Się');
+
+
+INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('185', '3783');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('129', '177');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('290', '3902');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('97', '3296');
@@ -9060,7 +9087,21 @@ INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('60', '1493');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('195', '2864');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('170', '2292');
 INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('150', '3486');
-INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('258', '3353');INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('62', '2616', 'false');
+INSERT INTO zawartosc (idplaylisty, idutworu) VALUES ('258', '3353');
+
+-- usuniecie 	-- CONSTRAINT zawartosc_pk PRIMARY KEY (idplaylisty,idutworu) i wyszukanie:
+select * from zawartosc group by(idplaylisty, idutworu) having count(*) > 1;
+/*
+-- te wartosci usuwamy
+245	86
+2	31	1615
+3	195	408
+4	143	2443
+*/ 
+
+commit;
+
+INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('62', '2616', 'false');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('34', '877', 'true');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('25', '3715', 'false');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('49', '833', 'false');
@@ -12049,3 +12090,9 @@ INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('20', '600', 'false');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('82', '3400', 'true');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('82', '1010', 'true');
 INSERT INTO oceny (idklienta, idutworu, lubi) VALUES ('52', '2211', 'true');
+
+
+
+
+
+COMMIT;
