@@ -1,65 +1,15 @@
 BEGIN;
 
-DROP SCHEMA IF EXISTS cukiernia CASCADE;
-CREATE SCHEMA cukiernia;
-
-SET search_path TO cukiernia;
+SET search_path TO confectionery;
 SET CONSTRAINTS ALL DEFERRED;
 
-DROP TABLE IF EXISTS zawartosc;
-DROP TABLE IF EXISTS artykuly;
-DROP TABLE IF EXISTS zamowienia;
-DROP TABLE IF EXISTS klienci;
-DROP TABLE IF EXISTS pudelka;
-DROP TABLE IF EXISTS czekoladki;
+DELETE FROM zawartosc;
+DELETE FROM artykuly;
+DELETE FROM zamowienia;
+DELETE FROM klienci;
+DELETE FROM pudelka;
+DELETE FROM czekoladki;
 
-CREATE TABLE czekoladki (
-  idczekoladki CHAR(3) PRIMARY KEY,
-  nazwa        VARCHAR(30) NOT NULL,
-  czekolada    VARCHAR(15),
-  orzechy      VARCHAR(15),
-  nadzienie    VARCHAR(15),
-  opis         VARCHAR(100) NOT NULL,
-  koszt        NUMERIC(7,2) NOT NULL,
-  masa         INTEGER NOT NULL
-);
-
-CREATE TABLE pudelka (
-  idpudelka CHAR(4) PRIMARY KEY,
-  nazwa     VARCHAR(40) NOT NULL,
-  opis      VARCHAR(150),
-  cena      NUMERIC(7,2) NOT NULL,
-  stan      INTEGER NOT NULL
-);
-
-CREATE TABLE zawartosc (
-  idpudelka    CHAR(4) NOT NULL REFERENCES pudelka,
-  idczekoladki CHAR(3) NOT NULL REFERENCES czekoladki,
-  sztuk        INTEGER NOT NULL,
-  PRIMARY KEY (idpudelka, idczekoladki)
-);
-
-CREATE TABLE klienci (
-  idklienta   INTEGER PRIMARY KEY,
-  nazwa       VARCHAR(130) NOT NULL,
-  ulica       VARCHAR(30) NOT NULL,
-  miejscowosc VARCHAR(15) NOT NULL,
-  kod         CHAR(6) NOT NULL,
-  telefon     VARCHAR(20) NOT NULL
-);
-
-CREATE TABLE zamowienia (
-  idzamowienia   INTEGER PRIMARY KEY,
-  idklienta      INTEGER NOT NULL REFERENCES klienci,
-  datarealizacji DATE NOT NULL
-);
-
-CREATE TABLE artykuly (
-  idzamowienia INTEGER NOT NULL REFERENCES zamowienia,
-  idpudelka    CHAR(4) NOT NULL REFERENCES pudelka,
-  sztuk        INTEGER NOT NULL,
-  PRIMARY KEY (idzamowienia, idpudelka)
-);
 
 
 copy klienci FROM stdin with (NULL '', delimiter '|');
@@ -131,6 +81,7 @@ copy klienci FROM stdin with (NULL '', delimiter '|');
 85|Górka Helena|Boczna 23/91|Regina|11-788|746 006 027
 86|Moniak Rafał|Krucza 12/43|Kraków|79-408|012 334 44 58
 \.
+
 
 
 copy zamowienia FROM stdin with (NULL '', delimiter '|');
@@ -281,6 +232,8 @@ copy zamowienia FROM stdin with (NULL '', delimiter '|');
 149|55|2013-12-20
 \.
 
+
+
 copy czekoladki FROM stdin with (NULL '', delimiter '|');
 b01|Płomienna ekstaza|gorzka|łuskane|krem|Orzechy w kremie, zatopione w gorzkiej czekoladzie.|0.30|20
 b02|Gorzka jagodowa|gorzka||jagody|Smakowite górskie jagody w czekoladzie.|0.25|25
@@ -325,6 +278,8 @@ w03|Zlamane serce|biała|pekan||Dwie połówki pekanowego serca z białej czekol
 w06|Smak Brazylii|biała|brazylijskie||Brazylijskie orzechy, ręcznie umieszczane w białej czekoladzie.|0.28|35
 \.
 
+
+
 copy pudelka FROM stdin with (NULL '', delimiter '|');
 alls|Pory roku|Jagody, truskawki i maliny, wszystkie słodziutkie i smaczne.|14.00|700
 alpi|Kolekcja alpejska|Alpejskie jagody i maliny w naszej najlepszej czekoladzie.|20.00|400
@@ -345,6 +300,8 @@ supr|Smaki|Smaki wybranych orzechów oblewanych czekoladą.|18.00|400
 swe2|Słodkie kremowe|Smakowite kremy dla wszystkich którzy uwielbiają nadzienie kremowe.|23.00|200
 swee|Mieszanka czekoladowa|Nasza najlepsza mieszanka owoców w czekoladzie.|27.00|300
 \.
+
+
 
 copy artykuly FROM stdin with (NULL '', delimiter '|');
 1|pean|2
@@ -829,6 +786,8 @@ copy artykuly FROM stdin with (NULL '', delimiter '|');
 149|swe2|1
 \.
 
+
+
 copy zawartosc FROM stdin with (NULL '', delimiter '|');
 alls|b02|2
 alls|b04|2
@@ -919,4 +878,6 @@ swee|m11|2
 swee|m09|2
 \.
 
-commit;
+
+
+COMMIT;

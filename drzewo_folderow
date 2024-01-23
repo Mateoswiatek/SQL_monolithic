@@ -1,4 +1,5 @@
 DB_nazwa_bazy
+- README.md - opis
 - nazwa_bazy_setup_create.sql - tworzy schemat ze wszystkimi zaleznosciami - domyslnie usuwa istniejace
 - nazwa_bazy_setup_insert_data_index.sql - dodaje dane (w tym pliku jest zakomendowane czy ma usuwać czxy dodawać)
 - nazwa_bazy_setup_add_functions.sql - plik ktory dodaje funkcje

@@ -1,49 +1,14 @@
 BEGIN;
 
-SET search_path TO siatkowka;
+SET search_path TO volleyball;
+SET CONSTRAINTS ALL DEFERRED;
 
-DROP TABLE statystyki;
-DROP TABLE punktujace;
-DROP TABLE mecze;
-DROP TABLE siatkarki;
-DROP TABLE druzyny;
+DELETE FROM druzyny;
+DELETE FROM siatkarki;
+DELETE FROM mecze;
+DELETE FROM punktujace;
+DELETE FROM statystyki;
 
-CREATE TABLE druzyny (
-  iddruzyny VARCHAR(5) PRIMARY KEY,
-  nazwa VARCHAR(40) NOT NULL,
-  miasto VARCHAR(30) NOT NULL
-);
-
-CREATE TABLE siatkarki (
-  numer SMALLINT NOT NULL,
-  iddruzyny VARCHAR(5) NOT NULL REFERENCES druzyny,
-  imie VARCHAR(12) NOT NULL,
-  nazwisko VARCHAR(30) NOT NULL,
-  pozycja VARCHAR(12) NOT NULL,
-  PRIMARY KEY (numer, iddruzyny)
-);
-
-CREATE TABLE mecze (
-  idmeczu SMALLINT PRIMARY KEY,
-  gospodarze VARCHAR(5) NOT NULL REFERENCES druzyny,
-  goscie VARCHAR(5) NOT NULL REFERENCES druzyny,
-  termin DATE NOT NULL
-);
-
-CREATE TABLE statystyki (
-  idmeczu SMALLINT PRIMARY KEY REFERENCES mecze,
-  gospodarze SMALLINT[],
-  goscie SMALLINT[]
-);
-
-CREATE TABLE punktujace (
-  numer SMALLINT NOT NULL,
-  iddruzyny VARCHAR(5) NOT NULL REFERENCES druzyny,
-  idmeczu SMALLINT NOT NULL REFERENCES mecze,
-  punkty SMALLINT NOT NULL,
-  PRIMARY KEY (numer, iddruzyny, idmeczu),
-  FOREIGN KEY (numer, iddruzyny) REFERENCES siatkarki
-);
 
 
 INSERT INTO druzyny values('alubb', 'BKS Aluprof', 'Bielsko-Biała');
@@ -56,6 +21,7 @@ INSERT INTO druzyny values('gward', 'IMPEL Gwardia', 'Wrocław');
 INSERT INTO druzyny values('mksdg', 'ENION Energia MKS', 'Dąbrowa Górnicza');
 INSERT INTO druzyny values('gedan', 'Gedania', 'Żukowo');
 INSERT INTO druzyny values('bydg', 'GCB Centrostal', 'Bydgoszcz');
+
 
 
 INSERT INTO siatkarki values(1, 'musz', 'Izabela', 'Bełcik', 'rozgrywająca');
@@ -196,6 +162,7 @@ INSERT INTO siatkarki values(12, 'pila', 'Agnieszka', 'Kosmatka', 'atakująca');
 INSERT INTO siatkarki values(13, 'pila', 'Paulina', 'Maj', 'libero');
 
 
+
 INSERT INTO mecze values(1, 'organ', 'musz', '2009-10-25');
 INSERT INTO mecze values(2, 'alubb', 'stal', '2009-10-24');
 INSERT INTO mecze values(3, 'pila', 'gedan', '2009-10-24');
@@ -288,6 +255,7 @@ INSERT INTO mecze values(89, 'alubb', 'gedan', '2010-03-13');
 INSERT INTO mecze values(90, 'musz', 'stal', '2010-03-13');
 
 
+
 INSERT INTO statystyki values(1, '{28,23,13,12}', '{26,25,25,25}');
 INSERT INTO statystyki values(2, '{25,25,25}', '{12,17,20}');
 INSERT INTO statystyki values(3, '{25,25,25}', '{10,15,17}');
@@ -378,6 +346,8 @@ INSERT INTO statystyki values(87 , '{23,22,25,25,5}', '{25,25,19,22,15}');
 INSERT INTO statystyki values(88 , '{25,11,18,24}', '{21,25,25,26}');
 INSERT INTO statystyki values(89 , '{25,25,25}', '{14,21,11}');
 INSERT INTO statystyki values(90 , '{25,25,29}', '{15,21,27}');
+
+
 
 INSERT INTO punktujace values(1, 'organ', 1, 1);
 INSERT INTO punktujace values(3, 'organ', 1, 10);
@@ -1783,10 +1753,4 @@ INSERT INTO punktujace values(10, 'stal', 90, 6);
 INSERT INTO punktujace values(11, 'stal', 90, 3);
 INSERT INTO punktujace values(16, 'stal', 90, 8);
 
-
-
-
-
-
-
-commit;
+COMMIT;

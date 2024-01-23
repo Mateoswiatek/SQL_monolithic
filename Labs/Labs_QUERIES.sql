@@ -4,30 +4,8 @@ SET search_path TO siatkowka, kwiaciarnia, public;
 ALTER ROLE matrxteo SET search_path TO siatkowka, kwiaciarnia, public, spotify; 
 
 
-
-
-DROP TABLE siatkowka.maz cascade;
-DROP TABLE siatkowka.zona cascade;
-
-DROP TABLE siatkowka.zamowienia cascade;
-DROP TABLE siatkowka.pracownicy cascade;
-DROP TABLE siatkowka.dzialy cascade;
-DROP TABLE siatkowka.albumy cascade;
-DROP TABLE siatkowka.zamowienia_temp cascade;
-
-
-
-
 SELECT table_name, table_schema
 FROM information_schema.tables ORDER BY table_schema DESC;
-
-
-INSERT INTO test (id, name) VALUES
-(1, 'test1'),
-(2, 'test2')
-ON CONFLICT DO NOTHING;
-
-
 
 
 SELECT * FROM mecze;

@@ -3,10 +3,11 @@
 -- PostgreSQL version: 14.0
 -- Project Site: pgmodeler.io
 
-
+BEGIN;
 DROP SCHEMA IF EXISTS spotify CASCADE;
 CREATE SCHEMA spotify;
 SET search_path TO spotify;
+SET CONSTRAINTS ALL DEFERRED;
 
 DROP TABLE IF EXISTS wykonawcy;
 DROP TABLE IF EXISTS albumy;
@@ -217,3 +218,5 @@ ALTER TABLE oceny ADD CONSTRAINT oceny_utwory_idutworu_fk FOREIGN KEY (idutworu)
 REFERENCES utwory (idutworu) MATCH SIMPLE
 ON DELETE CASCADE ON UPDATE CASCADE;
 -- ddl-END --
+
+COMMIT;
